@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- make sure you build teh project first-->
+<project name="jbullet" basedir="." default="instrument-classes">
+	<path id="myclasspath">
+		<pathelement path="bin" />
+		<pathelement location="lib/jstackalloc/stack-alloc.jar" />
+		<pathelement location="lib/ASM3.1/asm-all-3.1.jar" />
+		<pathelement location="lib/vecmath/vecmath.jar" />
+	</path>
+
+	<target name="instrument-classes">
+		<taskdef name="instrument-stack" 
+			classname="cz.advel.stack.instrument.InstrumentationTask" 
+			classpathref="myclasspath">
+		</taskdef>
+		<instrument-stack isolated="true" packageName="com.bulletphysics" dest="bin">
+			<fileset dir="bin" includes="**/*.class" />
+		</instrument-stack>
+
+	</target>
+
+
+</project>
