@@ -28,29 +28,47 @@ package com.bulletphysics.dynamics.constraintsolver;
  * 
  * @author jezek2
  */
-public class ContactSolverInfo {
+public class ContactSolverInfo
+{
 
 	public float tau = 0.6f;
+
 	public float damping = 1f;
+
 	public float friction = 0.3f;
+
 	public float timeStep;
+
 	public float restitution = 0f;
+
 	public int numIterations = 10;
+
 	public float maxErrorReduction = 20f;
+
 	public float sor = 1.3f;
+
 	public float erp = 0.2f; // used as Baumgarte factor
+
 	public float erp2 = 0.1f; // used in Split Impulse
+
 	public boolean splitImpulse = false;
+
 	public float splitImpulsePenetrationThreshold = -0.02f;
+
 	public float linearSlop = 0f;
+
 	public float warmstartingFactor = 0.85f;
-	
+
 	public int solverMode = SolverMode.SOLVER_RANDMIZE_ORDER | SolverMode.SOLVER_CACHE_FRIENDLY | SolverMode.SOLVER_USE_WARMSTARTING;
 
-	public ContactSolverInfo() {
+	public int restingContactRestitutionThreshold = 2;//resting contact lifetime threshold to disable restitution
+
+	public ContactSolverInfo()
+	{
 	}
-	
-	public ContactSolverInfo(ContactSolverInfo g) {
+
+	public ContactSolverInfo(ContactSolverInfo g)
+	{
 		tau = g.tau;
 		damping = g.damping;
 		friction = g.friction;
@@ -61,5 +79,5 @@ public class ContactSolverInfo {
 		sor = g.sor;
 		erp = g.erp;
 	}
-	
+
 }
