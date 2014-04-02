@@ -40,18 +40,23 @@ import javax.vecmath.Vector3f;
  * 
  * @author jezek2
  */
-public class CompoundShape extends CollisionShape {
+public class CompoundShape extends CollisionShape
+{
 
 	private final ObjectArrayList<CompoundShapeChild> children = new ObjectArrayList<CompoundShapeChild>();
+
 	private final Vector3f localAabbMin = new Vector3f(1e30f, 1e30f, 1e30f);
+
 	private final Vector3f localAabbMax = new Vector3f(-1e30f, -1e30f, -1e30f);
 
 	private OptimizedBvh aabbTree = null;
 
 	private float collisionMargin = 0f;
+
 	protected final Vector3f localScaling = new Vector3f(1f, 1f, 1f);
 
-	public void addChildShape(Transform localTransform, CollisionShape shape) {
+	public void addChildShape(Transform localTransform, CollisionShape shape)
+	{
 		//m_childTransforms.push_back(localTransform);
 		//m_childShapes.push_back(shape);
 		CompoundShapeChild child = new CompoundShapeChild();
@@ -67,35 +72,53 @@ public class CompoundShape extends CollisionShape {
 		shape.getAabb(localTransform, _localAabbMin, _localAabbMax);
 
 		// JAVA NOTE: rewritten
-//		for (int i=0;i<3;i++)
-//		{
-//			if (this.localAabbMin[i] > _localAabbMin[i])
-//			{
-//				this.localAabbMin[i] = _localAabbMin[i];
-//			}
-//			if (this.localAabbMax[i] < _localAabbMax[i])
-//			{
-//				this.localAabbMax[i] = _localAabbMax[i];
-//			}
-//		}
+		//		for (int i=0;i<3;i++)
+		//		{
+		//			if (this.localAabbMin[i] > _localAabbMin[i])
+		//			{
+		//				this.localAabbMin[i] = _localAabbMin[i];
+		//			}
+		//			if (this.localAabbMax[i] < _localAabbMax[i])
+		//			{
+		//				this.localAabbMax[i] = _localAabbMax[i];
+		//			}
+		//		}
 		VectorUtil.setMin(this.localAabbMin, _localAabbMin);
 		VectorUtil.setMax(this.localAabbMax, _localAabbMax);
+	}
+
+	public void updateChildTransform(int childIndex, Transform newChildTransform)
+	{
+		children.getQuick(childIndex).transform.set(newChildTransform);
+
+		///update the dynamic aabb tree
+		Vector3f _localAabbMin = Stack.alloc(Vector3f.class), _localAabbMax = Stack.alloc(Vector3f.class);
+		children.getQuick(childIndex).childShape.getAabb(newChildTransform, _localAabbMin, _localAabbMax);
+
+		VectorUtil.setMin(this.localAabbMin, _localAabbMin);
+		VectorUtil.setMax(this.localAabbMax, _localAabbMax);
+
+		recalculateLocalAabb();
 	}
 
 	/**
 	 * Remove all children shapes that contain the specified shape.
 	 */
-	public void removeChildShape(CollisionShape shape) {
+	public void removeChildShape(CollisionShape shape)
+	{
 		boolean done_removing;
 
 		// Find the children containing the shape specified, and remove those children.
-		do {
+		do
+		{
 			done_removing = true;
 
-			for (int i = 0; i < children.size(); i++) {
-				if (children.getQuick(i).childShape == shape) {
+			for (int i = 0; i < children.size(); i++)
+			{
+				if (children.getQuick(i).childShape == shape)
+				{
 					children.removeQuick(i);
-					done_removing = false;  // Do another iteration pass after removing from the vector
+					done_removing = false; // Do another iteration pass after removing from the vector
 					break;
 				}
 			}
@@ -104,21 +127,37 @@ public class CompoundShape extends CollisionShape {
 
 		recalculateLocalAabb();
 	}
-	
-	public int getNumChildShapes() {
+
+	public int getNumChildShapes()
+	{
 		return children.size();
 	}
 
-	public CollisionShape getChildShape(int index) {
+	public int getChildShapeIndex(CollisionShape child)
+	{
+		for (int i = 0; i < children.size(); i++)
+		{
+			if (children.getQuick(i).childShape == child)
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	public CollisionShape getChildShape(int index)
+	{
 		return children.getQuick(index).childShape;
 	}
 
-	public Transform getChildTransform(int index, Transform out) {
+	public Transform getChildTransform(int index, Transform out)
+	{
 		out.set(children.getQuick(index).transform);
 		return out;
 	}
 
-	public ObjectArrayList<CompoundShapeChild> getChildList() {
+	public ObjectArrayList<CompoundShapeChild> getChildList()
+	{
 		return children;
 	}
 
@@ -126,7 +165,8 @@ public class CompoundShape extends CollisionShape {
 	 * getAabb's default implementation is brute force, expected derived classes to implement a fast dedicated version.
 	 */
 	@Override
-	public void getAabb(Transform trans, Vector3f aabbMin, Vector3f aabbMax) {
+	public void getAabb(Transform trans, Vector3f aabbMin, Vector3f aabbMax)
+	{
 		Vector3f localHalfExtents = Stack.alloc(Vector3f.class);
 		localHalfExtents.sub(localAabbMax, localAabbMin);
 		localHalfExtents.scale(0.5f);
@@ -162,7 +202,8 @@ public class CompoundShape extends CollisionShape {
 	 * Re-calculate the local Aabb. Is called at the end of removeChildShapes.
 	 * Use this yourself if you modify the children or their transforms.
 	 */
-	public void recalculateLocalAabb() {
+	public void recalculateLocalAabb()
+	{
 		// Recalculate the local aabb
 		// Brute force, it iterates over all the shapes left.
 		localAabbMin.set(1e30f, 1e30f, 1e30f);
@@ -172,33 +213,40 @@ public class CompoundShape extends CollisionShape {
 		Vector3f tmpLocalAabbMax = Stack.alloc(Vector3f.class);
 
 		// extend the local aabbMin/aabbMax
-		for (int j = 0; j < children.size(); j++) {
+		for (int j = 0; j < children.size(); j++)
+		{
 			children.getQuick(j).childShape.getAabb(children.getQuick(j).transform, tmpLocalAabbMin, tmpLocalAabbMax);
-			
-			for (int i = 0; i < 3; i++) {
-				if (VectorUtil.getCoord(localAabbMin, i) > VectorUtil.getCoord(tmpLocalAabbMin, i)) {
+
+			for (int i = 0; i < 3; i++)
+			{
+				if (VectorUtil.getCoord(localAabbMin, i) > VectorUtil.getCoord(tmpLocalAabbMin, i))
+				{
 					VectorUtil.setCoord(localAabbMin, i, VectorUtil.getCoord(tmpLocalAabbMin, i));
 				}
-				if (VectorUtil.getCoord(localAabbMax, i) < VectorUtil.getCoord(tmpLocalAabbMax, i)) {
+				if (VectorUtil.getCoord(localAabbMax, i) < VectorUtil.getCoord(tmpLocalAabbMax, i))
+				{
 					VectorUtil.setCoord(localAabbMax, i, VectorUtil.getCoord(tmpLocalAabbMax, i));
 				}
 			}
 		}
 	}
-	
+
 	@Override
-	public void setLocalScaling(Vector3f scaling) {
+	public void setLocalScaling(Vector3f scaling)
+	{
 		localScaling.set(scaling);
 	}
 
 	@Override
-	public Vector3f getLocalScaling(Vector3f out) {
+	public Vector3f getLocalScaling(Vector3f out)
+	{
 		out.set(localScaling);
 		return out;
 	}
 
 	@Override
-	public void calculateLocalInertia(float mass, Vector3f inertia) {
+	public void calculateLocalInertia(float mass, Vector3f inertia)
+	{
 		// approximation: take the inertia from the aabb for now
 		Transform ident = Stack.alloc(Transform.class);
 		ident.setIdentity();
@@ -217,31 +265,36 @@ public class CompoundShape extends CollisionShape {
 		inertia.y = (mass / 12f) * (lx * lx + lz * lz);
 		inertia.z = (mass / 12f) * (lx * lx + ly * ly);
 	}
-	
+
 	@Override
-	public BroadphaseNativeType getShapeType() {
+	public BroadphaseNativeType getShapeType()
+	{
 		return BroadphaseNativeType.COMPOUND_SHAPE_PROXYTYPE;
 	}
 
 	@Override
-	public void setMargin(float margin) {
+	public void setMargin(float margin)
+	{
 		collisionMargin = margin;
 	}
 
 	@Override
-	public float getMargin() {
+	public float getMargin()
+	{
 		return collisionMargin;
 	}
 
 	@Override
-	public String getName() {
+	public String getName()
+	{
 		return "Compound";
 	}
 
 	// this is optional, but should make collision queries faster, by culling non-overlapping nodes
 	// void	createAabbTreeFromChildren();
-	
-	public OptimizedBvh getAabbTree() {
+
+	public OptimizedBvh getAabbTree()
+	{
 		return aabbTree;
 	}
 
@@ -255,13 +308,15 @@ public class CompoundShape extends CollisionShape {
 	 * with the principal axes. This also necessitates a correction of the world transform
 	 * of the collision object by the principal transform.
 	 */
-	public void calculatePrincipalAxisTransform(float[] masses, Transform principal, Vector3f inertia) {
+	public void calculatePrincipalAxisTransform(float[] masses, Transform principal, Vector3f inertia)
+	{
 		int n = children.size();
 
 		float totalMass = 0;
 		Vector3f center = Stack.alloc(Vector3f.class);
 		center.set(0, 0, 0);
-		for (int k = 0; k < n; k++) {
+		for (int k = 0; k < n; k++)
+		{
 			center.scaleAdd(masses[k], children.getQuick(k).transform.origin, center);
 			totalMass += masses[k];
 		}
@@ -271,7 +326,8 @@ public class CompoundShape extends CollisionShape {
 		Matrix3f tensor = Stack.alloc(Matrix3f.class);
 		tensor.setZero();
 
-		for (int k = 0; k < n; k++) {
+		for (int k = 0; k < n; k++)
+		{
 			Vector3f i = Stack.alloc(Vector3f.class);
 			children.getQuick(k).childShape.calculateLocalInertia(masses[k], i);
 
