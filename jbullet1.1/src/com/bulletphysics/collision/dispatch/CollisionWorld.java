@@ -397,6 +397,7 @@ public class CollisionWorld {
 			LocalShapeInfo shapeInfo = new LocalShapeInfo();
 			shapeInfo.shapePart = partId;
 			shapeInfo.triangleIndex = triangleIndex;
+			shapeInfo.collisionShape = triangleMesh;
 			if (hitFraction <= resultCallback.closestHitFraction) {
 				LocalConvexResult convexResult = new LocalConvexResult(collisionObject, shapeInfo, hitNormalLocal, hitPointLocal, hitFraction);
 				return resultCallback.addSingleResult(convexResult, normalInWorldSpace);
@@ -504,7 +505,7 @@ public class CollisionWorld {
 				}
 			}
 			else {
-				// todo: use AABB tree or other BVH acceleration structure!
+				// TODO: use AABB tree or other BVH acceleration structure!
 				if (collisionShape.isCompound()) {
 					CompoundShape compoundShape = (CompoundShape) collisionShape;
 					for (int i = 0; i < compoundShape.getNumChildShapes(); i++) {
