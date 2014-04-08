@@ -300,9 +300,11 @@ public class CollisionWorld {
 						//#endif //USE_SUBSIMPLEX_CONVEX_CAST
 
 						castResult.normal.normalize();
+						LocalShapeInfo shapeInfo = new LocalShapeInfo();
+						shapeInfo.collisionShape = collisionShape;
 						LocalRayResult localRayResult = new LocalRayResult(
 								collisionObject,
-								null,
+								shapeInfo,
 								castResult.normal,
 								castResult.fraction);
 
@@ -351,7 +353,7 @@ public class CollisionWorld {
 				}
 			}
 			else {
-				// todo: use AABB tree or other BVH acceleration structure!
+				// TODO: use AABB tree or other BVH acceleration structure!
 				if (collisionShape.isCompound()) {
 					CompoundShape compoundShape = (CompoundShape) collisionShape;
 					int i = 0;
@@ -634,12 +636,15 @@ public class CollisionWorld {
 	/**
 	 * LocalShapeInfo gives extra information for complex shapes.
 	 * Currently, only btTriangleMeshShape is available, so it just contains triangleIndex and subpart.
+	 * CollisionShape collisionShape added to allow compound shapes to report actual sub shape hit
 	 */
 	public static class LocalShapeInfo {
 		public int shapePart;
 		public int triangleIndex;
 		//const btCollisionShape*	m_shapeTemp;
 		//const btTransform*	m_shapeLocalTransform;
+		public CollisionShape collisionShape;
+		
 	}
 	
 	public static class LocalRayResult {
@@ -801,7 +806,8 @@ public class CollisionWorld {
 			LocalShapeInfo shapeInfo = new LocalShapeInfo();
 			shapeInfo.shapePart = partId;
 			shapeInfo.triangleIndex = triangleIndex;
-
+			shapeInfo.collisionShape = triangleMesh;
+			
 			LocalRayResult rayResult = new LocalRayResult(collisionObject, shapeInfo, hitNormalLocal, hitFraction);
 
 			boolean normalInWorldSpace = false;
