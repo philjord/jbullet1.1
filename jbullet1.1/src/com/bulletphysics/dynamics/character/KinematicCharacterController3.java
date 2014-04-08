@@ -10,7 +10,7 @@ import com.bulletphysics.collision.broadphase.BroadphasePair;
 import com.bulletphysics.collision.dispatch.CollisionObject;
 import com.bulletphysics.collision.dispatch.CollisionWorld;
 import com.bulletphysics.collision.dispatch.GhostObject;
-import com.bulletphysics.collision.dispatch.LocalPairCachingGhostObject;
+import com.bulletphysics.collision.dispatch.PairCachingGhostObject;
 import com.bulletphysics.collision.narrowphase.ManifoldPoint;
 import com.bulletphysics.collision.narrowphase.PersistentManifold;
 import com.bulletphysics.collision.shapes.ConvexShape;
@@ -49,7 +49,7 @@ public class KinematicCharacterController3 extends ActionInterface
 	private static Vector3f[] upAxisDirection = new Vector3f[]
 	{ new Vector3f(1.0f, 0.0f, 0.0f), new Vector3f(0.0f, 1.0f, 0.0f), new Vector3f(0.0f, 0.0f, 1.0f), };
 
-	private LocalPairCachingGhostObject ghostObject;
+	private PairCachingGhostObject ghostObject;
 
 	// is also in ghostObject, but it needs to be convex, so we store it here
 	// to avoid upcast
@@ -111,12 +111,12 @@ public class KinematicCharacterController3 extends ActionInterface
 
 	//TODO: add a crouch command, slow him down too
 
-	public KinematicCharacterController3(LocalPairCachingGhostObject ghostObject, ConvexShape convexShape, float stepHeight)
+	public KinematicCharacterController3(PairCachingGhostObject ghostObject, ConvexShape convexShape, float stepHeight)
 	{
 		this(ghostObject, convexShape, stepHeight, 1);
 	}
 
-	public KinematicCharacterController3(LocalPairCachingGhostObject ghostObject, ConvexShape convexShape, float stepHeight, int upAxis)
+	public KinematicCharacterController3(PairCachingGhostObject ghostObject, ConvexShape convexShape, float stepHeight, int upAxis)
 	{
 		this.upAxis = upAxis;
 		this.addedMargin = 0.02f;
