@@ -29,45 +29,64 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.bulletphysics.BulletGlobals;
+
 /**
  * Object pool for arrays.
  * 
  * @author jezek2
  */
-public class ArrayPool<T> {
+public class ArrayPool<T>
+{
 
 	private Class componentType;
+
 	private ObjectArrayList list = new ObjectArrayList();
+
 	private Comparator comparator;
+
 	private IntValue key = new IntValue();
-	
+
 	/**
 	 * Creates object pool.
 	 * 
 	 * @param componentType
 	 */
-	public ArrayPool(Class componentType) {
+	public ArrayPool(Class componentType)
+	{
 		this.componentType = componentType;
-		
-		if (componentType == float.class) {
+
+		if (componentType == float.class)
+		{
 			comparator = floatComparator;
 		}
-		else if (componentType == int.class) {
+		else if (componentType == int.class)
+		{
 			comparator = intComparator;
 		}
-		else if (!componentType.isPrimitive()) {
+		else if (!componentType.isPrimitive())
+		{
 			comparator = objectComparator;
 		}
-		else {
-			throw new UnsupportedOperationException("unsupported type "+componentType);
+		else
+		{
+			throw new UnsupportedOperationException("unsupported type " + componentType);
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	private T create(int length) {
-		return (T)Array.newInstance(componentType, length);
+	private T create(int length)
+	{
+		if (BulletGlobals.DISABLE_POOLING)
+		{
+			return (T) Array.newInstance(componentType, length);
+		}
+		else
+		{
+			return (T) Array.newInstance(componentType, length);
+		}
 	}
-	
+
 	/**
 	 * Returns array of exactly the same length as demanded, or create one if not
 	 * present in the pool.
@@ -76,13 +95,22 @@ public class ArrayPool<T> {
 	 * @return array
 	 */
 	@SuppressWarnings("unchecked")
-	public T getFixed(int length) {
-		key.value = length;
-		int index = Collections.binarySearch(list, key, comparator);
-		if (index < 0) {
+	public T getFixed(int length)
+	{
+		if (BulletGlobals.DISABLE_POOLING)
+		{
 			return create(length);
 		}
-		return (T)list.remove(index);
+		else
+		{
+			key.value = length;
+			int index = Collections.binarySearch(list, key, comparator);
+			if (index < 0)
+			{
+				return create(length);
+			}
+			return (T) list.remove(index);
+		}
 	}
 
 	/**
@@ -93,80 +121,114 @@ public class ArrayPool<T> {
 	 * @return array
 	 */
 	@SuppressWarnings("unchecked")
-	public T getAtLeast(int length) {
-		key.value = length;
-		int index = Collections.binarySearch(list, key, comparator);
-		if (index < 0) {
-			index = -index - 1;
-			if (index < list.size()) {
-				return (T)list.remove(index);
-			}
-			else {
-				return create(length);
-			}
+	public T getAtLeast(int length)
+	{
+		if (BulletGlobals.DISABLE_POOLING)
+		{
+			return create(length);
 		}
-		return (T)list.remove(index);
+		else
+		{
+			key.value = length;
+			int index = Collections.binarySearch(list, key, comparator);
+			if (index < 0)
+			{
+				index = -index - 1;
+				if (index < list.size())
+				{
+					return (T) list.remove(index);
+				}
+				else
+				{
+					return create(length);
+				}
+			}
+			return (T) list.remove(index);
+		}
 	}
-	
+
 	/**
 	 * Releases array into object pool.
 	 * 
 	 * @param array previously obtained array from this pool
 	 */
 	@SuppressWarnings("unchecked")
-	public void release(T array) {
-		int index = Collections.binarySearch(list, array, comparator);
-		if (index < 0) index = -index - 1;
-		list.add(index, array);
-		
-		// remove references from object arrays:
-		if (comparator == objectComparator) {
-			Object[] objArray = (Object[])array;
-			for (int i=0; i<objArray.length; i++) {
-				objArray[i] = null;
+	public void release(T array)
+	{
+		if (BulletGlobals.DISABLE_POOLING)
+		{
+			 
+		}
+		else
+		{
+			int index = Collections.binarySearch(list, array, comparator);
+			if (index < 0)
+				index = -index - 1;
+			list.add(index, array);
+
+			// remove references from object arrays:
+			if (comparator == objectComparator)
+			{
+				Object[] objArray = (Object[]) array;
+				for (int i = 0; i < objArray.length; i++)
+				{
+					objArray[i] = null;
+				}
 			}
 		}
 	}
-	
+
 	////////////////////////////////////////////////////////////////////////////
 
-	private static Comparator floatComparator = new Comparator() {
-		public int compare(Object o1, Object o2) {
-			int len1 = (o1 instanceof IntValue)? ((IntValue)o1).value : ((float[])o1).length;
-			int len2 = (o2 instanceof IntValue)? ((IntValue)o2).value : ((float[])o2).length;
-			return len1 > len2? 1 : len1 < len2 ? -1 : 0;
+	private static Comparator floatComparator = new Comparator()
+	{
+		public int compare(Object o1, Object o2)
+		{
+			int len1 = (o1 instanceof IntValue) ? ((IntValue) o1).value : ((float[]) o1).length;
+			int len2 = (o2 instanceof IntValue) ? ((IntValue) o2).value : ((float[]) o2).length;
+			return len1 > len2 ? 1 : len1 < len2 ? -1 : 0;
 		}
 	};
 
-	private static Comparator intComparator = new Comparator() {
-		public int compare(Object o1, Object o2) {
-			int len1 = (o1 instanceof IntValue)? ((IntValue)o1).value : ((int[])o1).length;
-			int len2 = (o2 instanceof IntValue)? ((IntValue)o2).value : ((int[])o2).length;
-			return len1 > len2? 1 : len1 < len2 ? -1 : 0;
+	private static Comparator intComparator = new Comparator()
+	{
+		public int compare(Object o1, Object o2)
+		{
+			int len1 = (o1 instanceof IntValue) ? ((IntValue) o1).value : ((int[]) o1).length;
+			int len2 = (o2 instanceof IntValue) ? ((IntValue) o2).value : ((int[]) o2).length;
+			return len1 > len2 ? 1 : len1 < len2 ? -1 : 0;
 		}
 	};
-	
-	private static Comparator objectComparator = new Comparator() {
-		public int compare(Object o1, Object o2) {
-			int len1 = (o1 instanceof IntValue)? ((IntValue)o1).value : ((Object[])o1).length;
-			int len2 = (o2 instanceof IntValue)? ((IntValue)o2).value : ((Object[])o2).length;
-			return len1 > len2? 1 : len1 < len2 ? -1 : 0;
+
+	private static Comparator objectComparator = new Comparator()
+	{
+		public int compare(Object o1, Object o2)
+		{
+			int len1 = (o1 instanceof IntValue) ? ((IntValue) o1).value : ((Object[]) o1).length;
+			int len2 = (o2 instanceof IntValue) ? ((IntValue) o2).value : ((Object[]) o2).length;
+			return len1 > len2 ? 1 : len1 < len2 ? -1 : 0;
 		}
 	};
-	
-	private static class IntValue {
+
+	private static class IntValue
+	{
 		public int value;
 	}
-	
+
 	////////////////////////////////////////////////////////////////////////////
-	
-	private static ThreadLocal<Map> threadLocal = new ThreadLocal<Map>() {
+
+	private static ThreadLocal<Map<Class<?>, ArrayPool<?>>> threadLocal = new ThreadLocal<Map<Class<?>, ArrayPool<?>>>()
+	{
 		@Override
-		protected Map initialValue() {
-			return new HashMap();
+		protected Map<Class<?>, ArrayPool<?>> initialValue()
+		{
+			return new HashMap<Class<?>, ArrayPool<?>>();
 		}
 	};
-	
+
+	// used when thread local is disabled
+	private static HashMap<Class<?>, ArrayPool<?>> globalHashMap = new HashMap<Class<?>, ArrayPool<?>>();
+
 	/**
 	 * Returns per-thread array pool for given type, or create one if it doesn't exist.
 	 * 
@@ -174,19 +236,31 @@ public class ArrayPool<T> {
 	 * @return object pool
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> ArrayPool<T> get(Class cls) {
-		Map map = threadLocal.get();
-		
-		ArrayPool<T> pool = (ArrayPool<T>)map.get(cls);
-		if (pool == null) {
+	public static <T> ArrayPool<T> get(Class<?> cls)
+	{
+
+		Map<Class<?>, ArrayPool<?>> map = null;
+		if (BulletGlobals.ALLOW_MULTI_THREAD_WORLD_ACCESS)
+		{
+			map = globalHashMap;
+		}
+		else
+		{
+			map = threadLocal.get();
+		}
+
+		ArrayPool<T> pool = (ArrayPool<T>) map.get(cls);
+		if (pool == null)
+		{
 			pool = new ArrayPool<T>(cls);
 			map.put(cls, pool);
 		}
-		
+
 		return pool;
 	}
 
-	public static void cleanCurrentThread() {
+	public static void cleanCurrentThread()
+	{
 		threadLocal.remove();
 	}
 

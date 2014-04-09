@@ -32,87 +32,206 @@ import cz.advel.stack.Stack;
  * 
  * @author jezek2
  */
-public class BulletGlobals {
-	
+public class BulletGlobals
+{
+
 	public static final boolean DEBUG = false;
-	
+
+	//removes all thread local calls, allows non-dynamics stepping threads to ray cast into world
+	public static final boolean ALLOW_MULTI_THREAD_WORLD_ACCESS = true;
+
+	// just disables the object pooling system for debug
+	public static final boolean DISABLE_POOLING = false;
+
 	public static final float CONVEX_DISTANCE_MARGIN = 0.04f;
+
 	public static final float FLT_EPSILON = 1.19209290e-07f;
+
 	public static final float SIMD_EPSILON = FLT_EPSILON;
-	
+
 	public static final float SIMD_2_PI = 6.283185307179586232f;
+
 	public static final float SIMD_PI = SIMD_2_PI * 0.5f;
+
 	public static final float SIMD_HALF_PI = SIMD_2_PI * 0.25f;
+
 	public static final float SIMD_RADS_PER_DEG = SIMD_2_PI / 360f;
+
 	public static final float SIMD_DEGS_PER_RAD = 360f / SIMD_2_PI;
+
 	public static final float SIMD_INFINITY = Float.MAX_VALUE;
+
+	// for use when threadlocal disabled
+	private static BulletGlobals bulletGlobals = new BulletGlobals();
 
 	////////////////////////////////////////////////////////////////////////////
 
-	private static ThreadLocal<BulletGlobals> threadLocal = new ThreadLocal<BulletGlobals>() {
+	private static ThreadLocal<BulletGlobals> threadLocal = new ThreadLocal<BulletGlobals>()
+	{
 		@Override
-		protected BulletGlobals initialValue() {
+		protected BulletGlobals initialValue()
+		{
 			return new BulletGlobals();
 		}
 	};
 
 	private ContactDestroyedCallback gContactDestroyedCallback;
+
 	private ContactAddedCallback gContactAddedCallback;
+
 	private ContactProcessedCallback gContactProcessedCallback;
 
 	private float contactBreakingThreshold = 0.02f;
+
 	// RigidBody
 	private float deactivationTime = 2f;
+
 	private boolean disableDeactivation = false;
-	
-	public static ContactAddedCallback getContactAddedCallback() {
-		return threadLocal.get().gContactAddedCallback;
+
+	public static ContactAddedCallback getContactAddedCallback()
+	{
+		if (ALLOW_MULTI_THREAD_WORLD_ACCESS)
+		{
+			return bulletGlobals.gContactAddedCallback;
+		}
+		else
+		{
+			return threadLocal.get().gContactAddedCallback;
+		}
 	}
 
-	public static void setContactAddedCallback(ContactAddedCallback callback) {
-		threadLocal.get().gContactAddedCallback = callback;
+	public static void setContactAddedCallback(ContactAddedCallback callback)
+	{
+		if (ALLOW_MULTI_THREAD_WORLD_ACCESS)
+		{
+			bulletGlobals.gContactAddedCallback = callback;
+		}
+		else
+		{
+			threadLocal.get().gContactAddedCallback = callback;
+		}
 	}
 
-	public static ContactDestroyedCallback getContactDestroyedCallback() {
-		return threadLocal.get().gContactDestroyedCallback;
+	public static ContactDestroyedCallback getContactDestroyedCallback()
+	{
+		if (ALLOW_MULTI_THREAD_WORLD_ACCESS)
+		{
+			return bulletGlobals.gContactDestroyedCallback;
+		}
+		else
+		{
+			return threadLocal.get().gContactDestroyedCallback;
+		}
 	}
 
-	public static void setContactDestroyedCallback(ContactDestroyedCallback callback) {
-		threadLocal.get().gContactDestroyedCallback = callback;
+	public static void setContactDestroyedCallback(ContactDestroyedCallback callback)
+	{
+		if (ALLOW_MULTI_THREAD_WORLD_ACCESS)
+		{
+			bulletGlobals.gContactDestroyedCallback = callback;
+		}
+		else
+		{
+			threadLocal.get().gContactDestroyedCallback = callback;
+		}
 	}
 
-	public static ContactProcessedCallback getContactProcessedCallback() {
-		return threadLocal.get().gContactProcessedCallback;
+	public static ContactProcessedCallback getContactProcessedCallback()
+	{
+		if (ALLOW_MULTI_THREAD_WORLD_ACCESS)
+		{
+			return bulletGlobals.gContactProcessedCallback;
+		}
+		else
+		{
+			return threadLocal.get().gContactProcessedCallback;
+		}
 	}
 
-	public static void setContactProcessedCallback(ContactProcessedCallback callback) {
-		threadLocal.get().gContactProcessedCallback = callback;
+	public static void setContactProcessedCallback(ContactProcessedCallback callback)
+	{
+		if (ALLOW_MULTI_THREAD_WORLD_ACCESS)
+		{
+			bulletGlobals.gContactProcessedCallback = callback;
+		}
+		else
+		{
+			threadLocal.get().gContactProcessedCallback = callback;
+		}
 	}
-	
+
 	////////////////////////////////////////////////////////////////////////////
 
-	public static float getContactBreakingThreshold() {
-		return threadLocal.get().contactBreakingThreshold;
+	public static float getContactBreakingThreshold()
+	{
+		if (ALLOW_MULTI_THREAD_WORLD_ACCESS)
+		{
+			return bulletGlobals.contactBreakingThreshold;
+		}
+		else
+		{
+			return threadLocal.get().contactBreakingThreshold;
+		}
 	}
 
-	public static void setContactBreakingThreshold(float threshold) {
-		threadLocal.get().contactBreakingThreshold = threshold;
+	public static void setContactBreakingThreshold(float threshold)
+	{
+		if (ALLOW_MULTI_THREAD_WORLD_ACCESS)
+		{
+			bulletGlobals.contactBreakingThreshold = threshold;
+		}
+		else
+		{
+			threadLocal.get().contactBreakingThreshold = threshold;
+		}
 	}
 
-	public static float getDeactivationTime() {
-		return threadLocal.get().deactivationTime;
+	public static float getDeactivationTime()
+	{
+		if (ALLOW_MULTI_THREAD_WORLD_ACCESS)
+		{
+			return bulletGlobals.deactivationTime;
+		}
+		else
+		{
+			return threadLocal.get().deactivationTime;
+		}
 	}
 
-	public static void setDeactivationTime(float time) {
-		threadLocal.get().deactivationTime = time;
+	public static void setDeactivationTime(float time)
+	{
+		if (ALLOW_MULTI_THREAD_WORLD_ACCESS)
+		{
+			bulletGlobals.deactivationTime = time;
+		}
+		else
+		{
+			threadLocal.get().deactivationTime = time;
+		}
 	}
 
-	public static boolean isDeactivationDisabled() {
-		return threadLocal.get().disableDeactivation;
+	public static boolean isDeactivationDisabled()
+	{
+		if (ALLOW_MULTI_THREAD_WORLD_ACCESS)
+		{
+			return bulletGlobals.disableDeactivation;
+		}
+		else
+		{
+			return threadLocal.get().disableDeactivation;
+		}
 	}
 
-	public static void setDeactivationDisabled(boolean disable) {
-		threadLocal.get().disableDeactivation = disable;
+	public static void setDeactivationDisabled(boolean disable)
+	{
+		if (ALLOW_MULTI_THREAD_WORLD_ACCESS)
+		{
+			bulletGlobals.disableDeactivation = disable;
+		}
+		else
+		{
+			threadLocal.get().disableDeactivation = disable;
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////
@@ -120,8 +239,12 @@ public class BulletGlobals {
 	/**
 	 * Cleans all current thread specific settings and caches.
 	 */
-	public static void cleanCurrentThread() {
-		threadLocal.remove();
+	public static void cleanCurrentThread()
+	{
+		if (!ALLOW_MULTI_THREAD_WORLD_ACCESS)
+		{
+			threadLocal.remove();
+		}
 		Stack.libraryCleanCurrentThread();
 		ObjectPool.cleanCurrentThread();
 		ArrayPool.cleanCurrentThread();
