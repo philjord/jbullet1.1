@@ -41,7 +41,8 @@ public class BulletGlobals
 	public static final boolean ALLOW_MULTI_THREAD_WORLD_ACCESS = true;
 
 	// just disables the object pooling system for debug
-	public static final boolean DISABLE_POOLING = false;
+	// TODO: Left as true for now as GImpact dynamic shapes fail when being inited, something in ArrayPool
+	public static final boolean DISABLE_POOLING = true;
 
 	public static final float CONVEX_DISTANCE_MARGIN = 0.04f;
 
