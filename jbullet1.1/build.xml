@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- make sure you build teh project first-->
+<!-- make sure you build the project first-->
+<!-- NOTE!!!!!!!!!!!! do not use workspace default JRE is includes a bad asm jar, over this one-->
+<!-- Both project and ant build must use Alternate JRE and pick it from list-->
 <project name="jbullet" basedir="." default="instrument-classes">
 	<path id="myclasspath">
 		<pathelement path="bin" />
