@@ -2,9 +2,9 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.6.0_45"/>
-	<classpathentry kind="lib" path="/external_jars/external jars/lwjgl-2.8.5/jar/jinput.jar"/>
-	<classpathentry kind="lib" path="/external_jars/external jars/lwjgl-2.8.5/jar/lwjgl.jar" sourcepath="E:/downloads&amp;installs/develop/java/jogamp/jogamp-all-platforms/jogl-java-src.zip"/>
-	<classpathentry kind="lib" path="/external_jars/external jars/lwjgl-2.8.5/jar/lwjgl_util.jar"/>
+	<classpathentry exported="true" kind="lib" path="/external_jars/external jars/lwjgl-2.8.5/jar/jinput.jar"/>
+	<classpathentry exported="true" kind="lib" path="/external_jars/external jars/lwjgl-2.8.5/jar/lwjgl.jar" sourcepath="E:/downloads&amp;installs/develop/java/jogamp/jogamp-all-platforms/jogl-java-src.zip"/>
+	<classpathentry exported="true" kind="lib" path="/external_jars/external jars/lwjgl-2.8.5/jar/lwjgl_util.jar"/>
 	<classpathentry kind="lib" path="/external_jars/external jars/jbullet-20101010/lib/swing-layout/swing-layout-1.0.3.jar"/>
 	<classpathentry kind="lib" path="C:/eclipse/plugins/org.apache.ant_1.8.4.v201303080030/lib/ant.jar"/>
 	<classpathentry kind="lib" path="lib/jstackalloc/stack-alloc.jar"/>
