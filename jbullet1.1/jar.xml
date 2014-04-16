@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project jbullet1.1 with libraries in sub-folder">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+        <jar destfile="E:/Java/git/jbullet1.1/jbullet1.1/dist/jbullet1.1.jar">
+            <manifest>
+                <attribute name="Main-Class" value="com.bulletphysics.demos.applet.JBulletApplet"/>
+                <attribute name="Class-Path" value=". jbullet1.1_lib/jinput.jar jbullet1.1_lib/lwjgl.jar jbullet1.1_lib/lwjgl_util.jar jbullet1.1_lib/swing-layout-1.0.3.jar jbullet1.1_lib/ant.jar jbullet1.1_lib/stack-alloc.jar jbullet1.1_lib/vecmath.jar"/>
+            </manifest>
+            <fileset dir="E:/Java/git/jbullet1.1/jbullet1.1/bin"/>
+        </jar>
+        <delete dir="E:/Java/git/jbullet1.1/jbullet1.1/dist/jbullet1.1_lib"/>
+        <mkdir dir="E:/Java/git/jbullet1.1/jbullet1.1/dist/jbullet1.1_lib"/>
+        <copy file="E:/Java/git/external_jars/external_jars/external jars/lwjgl-2.8.5/jar/jinput.jar" todir="E:/Java/git/jbullet1.1/jbullet1.1/dist/jbullet1.1_lib"/>
+        <copy file="E:/Java/git/external_jars/external_jars/external jars/lwjgl-2.8.5/jar/lwjgl.jar" todir="E:/Java/git/jbullet1.1/jbullet1.1/dist/jbullet1.1_lib"/>
+        <copy file="E:/Java/git/external_jars/external_jars/external jars/lwjgl-2.8.5/jar/lwjgl_util.jar" todir="E:/Java/git/jbullet1.1/jbullet1.1/dist/jbullet1.1_lib"/>
+        <copy file="E:/Java/git/external_jars/external_jars/external jars/jbullet-20101010/lib/swing-layout/swing-layout-1.0.3.jar" todir="E:/Java/git/jbullet1.1/jbullet1.1/dist/jbullet1.1_lib"/>
+        <copy file="C:/eclipse/plugins/org.apache.ant_1.8.4.v201303080030/lib/ant.jar" todir="E:/Java/git/jbullet1.1/jbullet1.1/dist/jbullet1.1_lib"/>
+        <copy file="E:/Java/git/jbullet1.1/jbullet1.1/lib/jstackalloc/stack-alloc.jar" todir="E:/Java/git/jbullet1.1/jbullet1.1/dist/jbullet1.1_lib"/>
+        <copy file="E:/Java/git/jbullet1.1/jbullet1.1/lib/vecmath/vecmath.jar" todir="E:/Java/git/jbullet1.1/jbullet1.1/dist/jbullet1.1_lib"/>
+    </target>
+</project>

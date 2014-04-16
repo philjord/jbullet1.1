@@ -4,25 +4,13 @@
     <options buildIfNeeded="true" compress="true" descriptionLocation="/jbullet1.1/jaritup.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
     <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
     <selectedProjects/>
-    <manifest generateManifest="false" manifestLocation="/jbullet1.1/META_INF/MANIFEST.MF" manifestVersion="1.0" reuseManifest="false" saveManifest="true" usesManifest="true">
+    <manifest generateManifest="false" mainClassHandleIdentifier="=jbullet1.1/src&lt;com.bulletphysics.demos.applet{JBulletApplet.java[JBulletApplet" manifestLocation="/jbullet1.1/META_INF/MANIFEST.MF" manifestVersion="1.0" reuseManifest="true" saveManifest="true" usesManifest="true">
         <sealing sealJar="false">
             <packagesToSeal/>
             <packagesToUnSeal/>
         </sealing>
     </manifest>
-    <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
-        <folder path="/jbullet1.1/lib/swing-layout"/>
-        <file path="/jbullet1.1/OpenAL32.dll"/>
-        <file path="/jbullet1.1/.project"/>
-        <file path="/jbullet1.1/.classpath"/>
-        <folder path="/jbullet1.1/lib/vecmath"/>
-        <file path="/jbullet1.1/jinput-raw.dll"/>
-        <file path="/jbullet1.1/jinput-dx8.dll"/>
-        <javaElement handleIdentifier="=jbullet1.1/src"/>
-        <file path="/jbullet1.1/build.xml"/>
-        <folder path="/jbullet1.1/lib/lwjgl"/>
-        <file path="/jbullet1.1/lwjgl.dll"/>
-        <folder path="/jbullet1.1/META_INF"/>
-        <javaElement handleIdentifier="=jbullet1.1/lib\/lwjgl\/win32"/>
+    <selectedElements exportClassFiles="false" exportJavaFiles="false" exportOutputFolder="true">
+        <javaElement handleIdentifier="=jbullet1.1"/>
     </selectedElements>
 </jardesc>
