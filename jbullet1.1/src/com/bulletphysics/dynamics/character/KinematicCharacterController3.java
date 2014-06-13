@@ -159,21 +159,29 @@ public class KinematicCharacterController3 extends ActionInterface
 			playerStep(collisionWorld, deltaTime);
 		}
 
-		// update listeners
-		synchronized (characterPositionListeners)
+		// if anything has changed tell listeners
+		if (!currentPosition.equals(previousPosition))
 		{
-			//NOTE good candidate for concurrent mod exceptions here
-			for (CharacterPositionListener cpl : characterPositionListeners)
+			// update listeners
+			synchronized (characterPositionListeners)
 			{
-				cpl.positionChanged(currentPosition, rotationHolder);
+				//NOTE good candidate for concurrent mod exceptions here
+				for (CharacterPositionListener cpl : characterPositionListeners)
+				{
+					cpl.positionChanged(currentPosition, rotationHolder);
+				}
 			}
+			previousPosition.set(currentPosition);
 		}
-		previousPosition.set(currentPosition);
 	}
 
 	public void setRotation(Quat4f rotation)
 	{
-		rotationHolder.set(rotation);
+		//TODO: should this also tell listeners?
+		if (!rotationHolder.equals(rotation))
+		{
+			rotationHolder.set(rotation);
+		}
 	}
 
 	public void addCharacterPositionListener(CharacterPositionListener cpl)
@@ -798,7 +806,8 @@ public class KinematicCharacterController3 extends ActionInterface
 				//need to transform normal into worldspace
 				hitNormalWorld2 = Stack.alloc(Vector3f.class);
 				hitCollisionObject = convexResult.hitCollisionObject;
-				hitCollisionObject.getWorldTransform(Stack.alloc(Transform.class)).basis.transform(convexResult.hitNormalLocal, hitNormalWorld2);
+				hitCollisionObject.getWorldTransform(Stack.alloc(Transform.class)).basis.transform(convexResult.hitNormalLocal,
+						hitNormalWorld2);
 			}
 
 			float dotUp = up.dot(hitNormalWorld2);
