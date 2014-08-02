@@ -11,6 +11,7 @@
         </sealing>
     </manifest>
     <selectedElements exportClassFiles="false" exportJavaFiles="false" exportOutputFolder="true">
-        <javaElement handleIdentifier="=jbullet1.1"/>
+        <file path="/jbullet1.1/lib/jstackalloc/stack-alloc.jar"/>
+        <javaElement handleIdentifier="=jbullet1.1/src"/>
     </selectedElements>
 </jardesc>
