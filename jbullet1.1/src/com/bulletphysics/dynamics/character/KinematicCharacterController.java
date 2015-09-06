@@ -314,7 +314,8 @@ public class KinematicCharacterController extends ActionInterface
 		if (!useWalkDirection && (velocityTimeInterval <= 0.0 || walkDirection.length() < 0.0001f))
 		{
 			//				printf("\n");
-			return; // no motion
+			// this makes gravity no apply, perhaps I should give it zero thurst for time even during no movement?
+			//return; // no motion
 		}
 
 		wasOnGround = onGround();
