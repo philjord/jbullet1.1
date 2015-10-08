@@ -80,7 +80,14 @@ public class KinematicCharacterController extends ActionInterface
 	private boolean useWalkDirection;
 
 	// this is the desired walk direction, set by the user
+	private Vector3f desiredWalkDirection = new Vector3f();
+
+	private float desiredVelocityTimeInterval;
+
+	// these values are copies used in the current process step (to avoid long synchronized calls)
 	private Vector3f walkDirection = new Vector3f();
+
+	private float velocityTimeInterval;
 
 	private Vector3f normalizedDirection = new Vector3f();
 
@@ -106,8 +113,6 @@ public class KinematicCharacterController extends ActionInterface
 	private boolean wasOnGround;
 
 	private boolean useGhostObjectSweepTest;
-
-	private float velocityTimeInterval;
 
 	private int upAxis;
 
@@ -163,128 +168,141 @@ public class KinematicCharacterController extends ActionInterface
 	// ActionInterface interface
 	public void updateAction(CollisionWorld collisionWorld, float deltaTime)
 	{
+
 		// execute a warp request if pending
 		if (warpRequest != null)
 		{
-			Transform xform = Stack.alloc(Transform.class);
-			xform.setIdentity();
-			xform.origin.set(warpRequest);
-			warpRequest = null;
-			ghostObject.setWorldTransform(xform);
-			//let's pretend we've been here the whole time shall we
-			currentPosition.set(warpRequest);
-			previousPosition.set(warpRequest);
-			System.out.println("Physics warped to " + warpRequest);
-		}
+			synchronized (walkDirection)
+			{
+				Transform xform = ghostObject.getWorldTransform(Stack.alloc(Transform.class));
+				xform.origin.set(warpRequest);
+				ghostObject.setWorldTransform(xform);
+				//let's pretend we've been here the whole time shall we
+				currentPosition.set(warpRequest);
+				// previous will be set below
+				System.out.println("Physics warped to " + warpRequest);
+				warpRequest = null;
+			}
 
-		if (isFreeFly)
-		{
-			playerStepFreeFly(deltaTime);
 		}
 		else
 		{
-			checker.set(currentPosition);
-
-			preStep(collisionWorld);
-			playerStep(collisionWorld, deltaTime);
-
-			//diff from this update
-			checker.sub(currentPosition);
-			if (checker.length() > 10)
+			synchronized (walkDirection)
 			{
-				System.out.println("*************** checker.length() " + checker.length());
-				System.out.println("previousPosition " + previousPosition);
-				System.out.println("currentPosition " + currentPosition);
-
-				System.out.println("resetting to prev");
-				currentPosition.set(previousPosition);
-				Transform xform2 = ghostObject.getWorldTransform(Stack.alloc(Transform.class));
-				xform2.origin.set(previousPosition);
-				ghostObject.setWorldTransform(xform2);
-				velocityTimeInterval += deltaTime;
-
-				System.out.println("running prestep");
-				preStep(collisionWorld);
-				System.out.println("currentPosition " + currentPosition);
-				playerStep(collisionWorld, deltaTime);
-
-				System.out.println("running debug of playerStep");
-				float dt = deltaTime;
-				System.out.println("testing no move");
-				System.out.println("useWalkDirection " + useWalkDirection);
-				System.out.println("velocityTimeInterval " + velocityTimeInterval);
-				System.out.println("walkDirection " + walkDirection);
-				if (velocityTimeInterval <= 0.0)
-				{
-					System.out.println("velocityTimeInterval <= 0.0 !!!!!!!!! " + velocityTimeInterval);
-				}
-
-				wasOnGround = onGround();
-				System.out.println("wasOnGround " + wasOnGround);
-
-				// Update fall velocity.
-				System.out.println("dt " + dt);
-				verticalVelocity -= gravity * dt;
-				System.out.println("verticalVelocity1 " + verticalVelocity);
-				if (verticalVelocity > 0.0 && verticalVelocity > jumpSpeed)
-				{
-					verticalVelocity = jumpSpeed;
-				}
-				if (verticalVelocity < 0.0 && Math.abs(verticalVelocity) > Math.abs(fallSpeed))
-				{
-					verticalVelocity = -Math.abs(fallSpeed);
-				}
-				System.out.println("verticalVelocity2 " + verticalVelocity);
-				verticalOffset = verticalVelocity * dt;
-				System.out.println("verticalOffset " + verticalOffset);
-
-				Transform xform = ghostObject.getWorldTransform(Stack.alloc(Transform.class));
-
-				System.out.println("stepUp");
-				stepUp(collisionWorld);
-				System.out.println("currentPosition " + currentPosition);
-				if (useWalkDirection)
-				{
-					System.out.println("useWalkDirection stepForwardAndStrafe");
-					stepForwardAndStrafe(collisionWorld, walkDirection);
-					System.out.println("currentPosition " + currentPosition);
-				}
-				else
-				{
-					// still have some time left for moving!
-					float dtMoving = (dt < velocityTimeInterval) ? dt : velocityTimeInterval;
-					System.out.println("dtMoving " + dtMoving);
-					velocityTimeInterval -= dt;
-					System.out.println("velocityTimeInterval " + velocityTimeInterval);
-
-					// how far will we move while we are moving?
-					Vector3f move = Stack.alloc(Vector3f.class);
-					move.scale(dtMoving, walkDirection);
-					System.out.println("move " + move);
-
-					//printf("  dtMoving: %f", dtMoving);
-
-					// okay, step
-					System.out.println("stepForwardAndStrafe ");
-					stepForwardAndStrafe(collisionWorld, move);
-					System.out.println("currentPosition " + currentPosition);
-				}
-
-				System.out.println("stepDown");
-				stepDown(collisionWorld, dt);
-				System.out.println("currentPosition " + currentPosition);
-				//printf("\n");
-
-				xform.origin.set(currentPosition);
-				ghostObject.setWorldTransform(xform);
-
-				System.out.println("resetting to prev ... and finished");
-				currentPosition.set(previousPosition);
-				Transform xform3 = ghostObject.getWorldTransform(Stack.alloc(Transform.class));
-				xform3.origin.set(previousPosition);
-				ghostObject.setWorldTransform(xform3);
+				walkDirection.set(desiredWalkDirection);
+				normalizedDirection.set(getNormalizedVector(walkDirection, Stack.alloc(Vector3f.class)));
+				velocityTimeInterval = desiredVelocityTimeInterval;
 			}
 
+			if (isFreeFly)
+			{
+				playerStepFreeFly(deltaTime);
+			}
+			else
+			{
+				checker.set(currentPosition);
+
+				preStep(collisionWorld);
+				playerStep(collisionWorld, deltaTime);
+
+				//diff from this update
+				checker.sub(currentPosition);
+				if (checker.length() > 10)
+				{
+					System.out.println("*************** checker.length() " + checker.length());
+					System.out.println("previousPosition " + previousPosition);
+					System.out.println("currentPosition " + currentPosition);
+
+					System.out.println("resetting to prev");
+					currentPosition.set(previousPosition);
+					Transform xform2 = ghostObject.getWorldTransform(Stack.alloc(Transform.class));
+					xform2.origin.set(previousPosition);
+					ghostObject.setWorldTransform(xform2);
+					velocityTimeInterval += deltaTime;
+
+					System.out.println("running prestep");
+					preStep(collisionWorld);
+					System.out.println("currentPosition " + currentPosition);
+					playerStep(collisionWorld, deltaTime);
+
+					System.out.println("running debug of playerStep");
+					float dt = deltaTime;
+					System.out.println("testing no move");
+					System.out.println("useWalkDirection " + useWalkDirection);
+					System.out.println("velocityTimeInterval " + velocityTimeInterval);
+					System.out.println("walkDirection " + walkDirection);
+					if (velocityTimeInterval <= 0.0)
+					{
+						System.out.println("velocityTimeInterval <= 0.0 !!!!!!!!! " + velocityTimeInterval);
+					}
+
+					wasOnGround = onGround();
+					System.out.println("wasOnGround " + wasOnGround);
+
+					// Update fall velocity.
+					System.out.println("dt " + dt);
+					verticalVelocity -= gravity * dt;
+					System.out.println("verticalVelocity1 " + verticalVelocity);
+					if (verticalVelocity > 0.0 && verticalVelocity > jumpSpeed)
+					{
+						verticalVelocity = jumpSpeed;
+					}
+					if (verticalVelocity < 0.0 && Math.abs(verticalVelocity) > Math.abs(fallSpeed))
+					{
+						verticalVelocity = -Math.abs(fallSpeed);
+					}
+					System.out.println("verticalVelocity2 " + verticalVelocity);
+					verticalOffset = verticalVelocity * dt;
+					System.out.println("verticalOffset " + verticalOffset);
+
+					Transform xform = ghostObject.getWorldTransform(Stack.alloc(Transform.class));
+
+					System.out.println("stepUp");
+					stepUp(collisionWorld);
+					System.out.println("currentPosition " + currentPosition);
+					if (useWalkDirection)
+					{
+						System.out.println("useWalkDirection stepForwardAndStrafe");
+						stepForwardAndStrafe(collisionWorld, walkDirection);
+						System.out.println("currentPosition " + currentPosition);
+					}
+					else
+					{
+						// still have some time left for moving!
+						float dtMoving = (dt < velocityTimeInterval) ? dt : velocityTimeInterval;
+						System.out.println("dtMoving " + dtMoving);
+						velocityTimeInterval -= dt;
+						System.out.println("velocityTimeInterval " + velocityTimeInterval);
+
+						// how far will we move while we are moving?
+						Vector3f move = Stack.alloc(Vector3f.class);
+						move.scale(dtMoving, walkDirection);
+						System.out.println("move " + move);
+
+						//printf("  dtMoving: %f", dtMoving);
+
+						// okay, step
+						System.out.println("stepForwardAndStrafe ");
+						stepForwardAndStrafe(collisionWorld, move);
+						System.out.println("currentPosition " + currentPosition);
+					}
+
+					System.out.println("stepDown");
+					stepDown(collisionWorld, dt);
+					System.out.println("currentPosition " + currentPosition);
+					//printf("\n");
+
+					xform.origin.set(currentPosition);
+					ghostObject.setWorldTransform(xform);
+
+					System.out.println("resetting to prev ... and finished");
+					currentPosition.set(previousPosition);
+					Transform xform3 = ghostObject.getWorldTransform(Stack.alloc(Transform.class));
+					xform3.origin.set(previousPosition);
+					ghostObject.setWorldTransform(xform3);
+				}
+
+			}
 		}
 
 		// if anything has changed tell listeners
@@ -301,6 +319,7 @@ public class KinematicCharacterController extends ActionInterface
 			}
 			previousPosition.set(currentPosition);
 		}
+
 	}
 
 	public void setRotation(Quat4f rotation)
@@ -358,40 +377,40 @@ public class KinematicCharacterController extends ActionInterface
 
 	public void setVelocityForTimeInterval(Vector3f velocity, float timeInterval)
 	{
+
 		// gate against crap
-		if (Float.isNaN(walkDirection.x))
+		if (Float.isNaN(velocity.x))
 		{
 			velocity.set(0, 0, 0);
 		}
 		if (velocity.length() > 120)
 		{
 			System.err.println("KCC big velocity! " + velocity);
+			new Throwable().printStackTrace();
 		}
 		if (timeInterval > 10 || timeInterval < 0)
 		{
 			System.err.println("KCC timeInterval odd! " + timeInterval);
-		}
-
-		this.useWalkDirection = false;
-		walkDirection.set(velocity);
-		normalizedDirection.set(getNormalizedVector(walkDirection, Stack.alloc(Vector3f.class)));
-		velocityTimeInterval = timeInterval;
-
-		if (velocityTimeInterval <= 0.0)
-		{
-			System.out.println("velocityTimeInterval <= 0.0 !!!!!!!!! " + velocityTimeInterval);
-			System.out.println("velocity " + velocity);
-			System.out.println("timeInterval " + timeInterval);
 			new Throwable().printStackTrace();
 		}
+
+		synchronized (walkDirection)
+		{
+			this.useWalkDirection = false;
+			desiredWalkDirection.set(velocity);
+			desiredVelocityTimeInterval = timeInterval;
+		}
+
 	}
 
 	public void setWalkDirection(Vector3f walkDirection)
 	{
-		this.useWalkDirection = true;
-		this.walkDirection = walkDirection;
-		this.normalizedDirection = getNormalizedVector(this.walkDirection, this.normalizedDirection);
-
+		synchronized (walkDirection)
+		{
+			this.useWalkDirection = true;
+			this.desiredWalkDirection.set(walkDirection);
+			desiredVelocityTimeInterval = -1;
+		}
 	}
 
 	public void reset()
@@ -404,8 +423,11 @@ public class KinematicCharacterController extends ActionInterface
 	 */
 	public void warp(Vector3f origin)
 	{
-		System.out.println("warp request recieved " + origin);
-		warpRequest = new Vector3f(origin);
+		synchronized (walkDirection)
+		{
+			System.out.println("warp request recieved " + origin);
+			warpRequest = new Vector3f(origin);
+		}
 	}
 
 	public void preStep(CollisionWorld collisionWorld)
@@ -458,7 +480,7 @@ public class KinematicCharacterController extends ActionInterface
 
 			//printf("walkDirection(%f,%f,%f)\n",walkDirection[0],walkDirection[1],walkDirection[2]);
 			//printf("walkSpeed=%f\n",walkSpeed);	
-			//TODO: why does step up always move upwards?
+			//note step up always move upwards and expect step down to be called after it to restore
 			stepUp(collisionWorld);
 
 			//PJ differs from incorrect bullet code
@@ -838,7 +860,7 @@ public class KinematicCharacterController extends ActionInterface
 				if (distance2 > BulletGlobals.SIMD_EPSILON)
 				{
 					currentDir.normalize();
-					// see Quake2: "If velocity is against original velocity, stop ead to avoid tiny oscilations in sloping corners."
+					// see Quake2: "If velocity is against original velocity, stop dead to avoid tiny oscilations in sloping corners."
 					if (currentDir.dot(normalizedDirection) <= 0.0f)
 					{
 						break;
