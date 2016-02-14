@@ -12,10 +12,9 @@
             <zipfileset excludes="META-INF/*.SF" src="E:/Java/git/external_jars/external_jars/external jars/lwjgl-2.8.5/jar/jinput.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="E:/Java/git/external_jars/external_jars/external jars/lwjgl-2.8.5/jar/lwjgl.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="E:/Java/git/external_jars/external_jars/external jars/lwjgl-2.8.5/jar/lwjgl_util.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="E:/Java/git/external_jars/external_jars/external jars/jbullet-20101010/lib/swing-layout/swing-layout-1.0.3.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="C:/eclipse/plugins/org.apache.ant_1.8.4.v201303080030/lib/ant.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="E:/Java/git/jbullet1.1/jbullet1.1/lib/jstackalloc/stack-alloc.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="E:/Java/git/jbullet1.1/jbullet1.1/lib/vecmath/vecmath.jar"/>
+        	<excludesfile name="E:/Java/git/jbullet1.1/jbullet1.1/lib/vecmath/vecmath.jar"/>
         </jar>
     </target>
 </project>
