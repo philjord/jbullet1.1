@@ -695,7 +695,8 @@ public class GImpactCollisionAlgorithm extends CollisionAlgorithm {
 		
 		@Override
 		public CollisionAlgorithm createCollisionAlgorithm(CollisionAlgorithmConstructionInfo ci, CollisionObject body0, CollisionObject body1) {
-			GImpactCollisionAlgorithm algo = pool.get();
+			GImpactCollisionAlgorithm algo = pool.get();	// If trouble replace with belwo and re ant it		
+			//GImpactCollisionAlgorithm algo = new GImpactCollisionAlgorithm();
 			algo.init(ci, body0, body1);
 			return algo;
 		}

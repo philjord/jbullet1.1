@@ -41,8 +41,10 @@ public class BulletGlobals
 	public static final boolean ALLOW_MULTI_THREAD_WORLD_ACCESS = true;
 
 	// just disables the object pooling system for debug
-	// TODO: Left as true for now as GImpact dynamic shapes fail when being inited, something in ArrayPool
-	public static final boolean DISABLE_POOLING = true;
+	// TODO: GImpact dynamic shapes fail when being inited, something in ArrayPool, you get a class cast exception
+	// GImpactCollisionAlgorithm.CreateFunc.createCollisionAlgorithm was the thing I played with
+	// In the end I think it was just multi threadded acces that was my problem, synch calls added to Object Pool
+	public static final boolean DISABLE_POOLING = false;
 
 	public static final float CONVEX_DISTANCE_MARGIN = 0.04f;
 

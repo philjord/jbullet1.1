@@ -74,13 +74,30 @@ public class ObjectPool<T>
 		}
 		else
 		{
-			if (list.size() > 0)
+			if (BulletGlobals.ALLOW_MULTI_THREAD_WORLD_ACCESS)
 			{
-				return list.remove(list.size() - 1);
+				synchronized (list)
+				{
+					if (list.size() > 0)
+					{
+						return list.remove(list.size() - 1);
+					}
+					else
+					{
+						return create();
+					}
+				}
 			}
 			else
 			{
-				return create();
+				if (list.size() > 0)
+				{
+					return list.remove(list.size() - 1);
+				}
+				else
+				{
+					return create();
+				}
 			}
 		}
 	}
@@ -98,14 +115,23 @@ public class ObjectPool<T>
 		}
 		else
 		{
-			list.add(obj);
+			if (BulletGlobals.ALLOW_MULTI_THREAD_WORLD_ACCESS)
+			{
+				synchronized (list)
+				{
+					list.add(obj);
+				}
+			}
+			else
+			{
+				list.add(obj);
+			}
 		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////
 
-	private static ThreadLocal<Map<Class<?>, ObjectPool<?>>> threadLocal = new ThreadLocal<Map<Class<?>, ObjectPool<?>>>()
-	{
+	private static ThreadLocal<Map<Class<?>, ObjectPool<?>>> threadLocal = new ThreadLocal<Map<Class<?>, ObjectPool<?>>>() {
 		@Override
 		protected Map<Class<?>, ObjectPool<?>> initialValue()
 		{
