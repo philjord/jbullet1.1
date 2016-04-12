@@ -34,6 +34,9 @@ import com.bulletphysics.collision.shapes.ScalarType;
 import com.bulletphysics.collision.shapes.TriangleCallback;
 import com.bulletphysics.linearmath.MatrixUtil;
 import com.bulletphysics.linearmath.Transform;
+import com.bulletphysics.linearmath.VectorUtil;
+
+import cz.advel.stack.Stack;
 
 public class HeightfieldTerrainShape extends ConcaveShape
 {
@@ -77,8 +80,8 @@ public class HeightfieldTerrainShape extends ConcaveShape
 
 	protected Vector3f m_localScaling = new Vector3f();
 
-	public HeightfieldTerrainShape(int heightStickWidth, int heightStickLength, float[] heightfieldData, float heightScale,
-			float minHeight, float maxHeight, int upAxis, boolean flipQuadEdges)
+	public HeightfieldTerrainShape(int heightStickWidth, int heightStickLength, float[] heightfieldData, float heightScale, float minHeight,
+			float maxHeight, int upAxis, boolean flipQuadEdges)
 	{
 
 		initialize(heightStickWidth, heightStickLength, heightfieldData, heightScale, minHeight, maxHeight, upAxis, ScalarType.FLOAT,
@@ -105,24 +108,24 @@ public class HeightfieldTerrainShape extends ConcaveShape
 		// determine min/max axis-aligned bounding box (aabb) values
 		switch (m_upAxis)
 		{
-			case 0:
-			{
-				m_localAabbMin.set(m_minHeight, 0, 0);
-				m_localAabbMax.set(m_maxHeight, m_width, m_length);
-				break;
-			}
-			case 1:
-			{
-				m_localAabbMin.set(0, m_minHeight, 0);
-				m_localAabbMax.set(m_width, m_maxHeight, m_length);
-				break;
-			}
-			case 2:
-			{
-				m_localAabbMin.set(0, 0, m_minHeight);
-				m_localAabbMax.set(m_width, m_length, m_maxHeight);
-				break;
-			}
+		case 0:
+		{
+			m_localAabbMin.set(m_minHeight, 0, 0);
+			m_localAabbMax.set(m_maxHeight, m_width, m_length);
+			break;
+		}
+		case 1:
+		{
+			m_localAabbMin.set(0, m_minHeight, 0);
+			m_localAabbMax.set(m_width, m_maxHeight, m_length);
+			break;
+		}
+		case 2:
+		{
+			m_localAabbMin.set(0, 0, m_minHeight);
+			m_localAabbMax.set(m_width, m_length, m_maxHeight);
+			break;
+		}
 		}
 
 		// remember origin (defined as exact middle of aabb)
@@ -136,6 +139,7 @@ public class HeightfieldTerrainShape extends ConcaveShape
 
 	}
 
+	//deburners
 	private Vector3f v0 = new Vector3f();
 
 	private Vector3f v1 = new Vector3f();
@@ -179,43 +183,43 @@ public class HeightfieldTerrainShape extends ConcaveShape
 
 		switch (m_upAxis)
 		{
-			case 0:
-			{
-				if (quantizedAabbMin[1] > startX)
-					startX = quantizedAabbMin[1];
-				if (quantizedAabbMax[1] < endX)
-					endX = quantizedAabbMax[1];
-				if (quantizedAabbMin[2] > startJ)
-					startJ = quantizedAabbMin[2];
-				if (quantizedAabbMax[2] < endJ)
-					endJ = quantizedAabbMax[2];
-				break;
-			}
-			case 1:
-			{
-				if (quantizedAabbMin[0] > startX)
-					startX = quantizedAabbMin[0];
-				if (quantizedAabbMax[0] < endX)
-					endX = quantizedAabbMax[0];
-				if (quantizedAabbMin[2] > startJ)
-					startJ = quantizedAabbMin[2];
-				if (quantizedAabbMax[2] < endJ)
-					endJ = quantizedAabbMax[2];
-				break;
-			}
+		case 0:
+		{
+			if (quantizedAabbMin[1] > startX)
+				startX = quantizedAabbMin[1];
+			if (quantizedAabbMax[1] < endX)
+				endX = quantizedAabbMax[1];
+			if (quantizedAabbMin[2] > startJ)
+				startJ = quantizedAabbMin[2];
+			if (quantizedAabbMax[2] < endJ)
+				endJ = quantizedAabbMax[2];
+			break;
+		}
+		case 1:
+		{
+			if (quantizedAabbMin[0] > startX)
+				startX = quantizedAabbMin[0];
+			if (quantizedAabbMax[0] < endX)
+				endX = quantizedAabbMax[0];
+			if (quantizedAabbMin[2] > startJ)
+				startJ = quantizedAabbMin[2];
+			if (quantizedAabbMax[2] < endJ)
+				endJ = quantizedAabbMax[2];
+			break;
+		}
 
-			case 2:
-			{
-				if (quantizedAabbMin[0] > startX)
-					startX = quantizedAabbMin[0];
-				if (quantizedAabbMax[0] < endX)
-					endX = quantizedAabbMax[0];
-				if (quantizedAabbMin[1] > startJ)
-					startJ = quantizedAabbMin[1];
-				if (quantizedAabbMax[1] < endJ)
-					endJ = quantizedAabbMax[1];
-				break;
-			}
+		case 2:
+		{
+			if (quantizedAabbMin[0] > startX)
+				startX = quantizedAabbMin[0];
+			if (quantizedAabbMax[0] < endX)
+				endX = quantizedAabbMax[0];
+			if (quantizedAabbMin[1] > startJ)
+				startJ = quantizedAabbMin[1];
+			if (quantizedAabbMax[1] < endJ)
+				endJ = quantizedAabbMax[1];
+			break;
+		}
 		}
 
 		for (int j = startJ; j < endJ; j++)
@@ -228,7 +232,7 @@ public class HeightfieldTerrainShape extends ConcaveShape
 				vertices[1] = v1;
 				vertices[2] = v2;
 				if (m_flipQuadEdges || (m_useDiamondSubdivision && (((j + x) & 1) != 0)))
-				{ 
+				{
 					// first triangle
 					getVertex(x, j, vertices[0]);
 					getVertex(x + 1, j, vertices[1]);
@@ -269,22 +273,22 @@ public class HeightfieldTerrainShape extends ConcaveShape
 
 		switch (m_upAxis)
 		{
-			case 0:
-			{
-				vertex.set(height - m_localOrigin.x, (-m_width / 2.0f) + x, (-m_length / 2.0f) + y);
-				break;
-			}
-			case 1:
-			{
-				vertex.set((-m_width / 2.0f) + x, height - m_localOrigin.y, (-m_length / 2.0f) + y);
-				break;
-			}
+		case 0:
+		{
+			vertex.set(height - m_localOrigin.x, (-m_width / 2.0f) + x, (-m_length / 2.0f) + y);
+			break;
+		}
+		case 1:
+		{
+			vertex.set((-m_width / 2.0f) + x, height - m_localOrigin.y, (-m_length / 2.0f) + y);
+			break;
+		}
 
-			case 2:
-			{
-				vertex.set((-m_width / 2.0f) + x, (-m_length / 2.0f) + y, height - m_localOrigin.z);
-				break;
-			}
+		case 2:
+		{
+			vertex.set((-m_width / 2.0f) + x, (-m_length / 2.0f) + y, height - m_localOrigin.z);
+			break;
+		}
 		}
 
 		vertex.x = vertex.x * m_localScaling.x;
@@ -298,10 +302,18 @@ public class HeightfieldTerrainShape extends ConcaveShape
 		inertia.set(0.f, 0.f, 0.f);
 	}
 
+	//deburners
+	Vector3f halfExtents = new Vector3f();
+	Matrix3f abs_b = new Matrix3f();
+	Vector3f tmp = new Vector3f();
+	Vector3f center = new Vector3f();
+	Vector3f extent = new Vector3f();
+	Vector3f margin = new Vector3f();
+
 	@Override
 	public void getAabb(Transform t, Vector3f aabbMin, Vector3f aabbMax)
 	{
-		Vector3f halfExtents = new Vector3f();
+
 		halfExtents.set(m_localAabbMax);
 		halfExtents.sub(m_localAabbMin);
 		halfExtents.x = halfExtents.x * m_localScaling.x * 0.5f;
@@ -312,13 +324,11 @@ public class HeightfieldTerrainShape extends ConcaveShape
 		localOrigin[m_upAxis] = (m_minHeight + m_maxHeight) * 0.5f;  
 		localOrigin *= m_localScaling;*/
 
-		Matrix3f abs_b = new Matrix3f(t.basis);
+		abs_b.set(t.basis);
 		MatrixUtil.absolute(abs_b);
 
-		Vector3f tmp = new Vector3f();
+		center.set(t.origin);
 
-		Vector3f center = new Vector3f(t.origin);
-		Vector3f extent = new Vector3f();
 		abs_b.getRow(0, tmp);
 		extent.x = tmp.dot(halfExtents);
 		abs_b.getRow(1, tmp);
@@ -326,8 +336,8 @@ public class HeightfieldTerrainShape extends ConcaveShape
 		abs_b.getRow(2, tmp);
 		extent.z = tmp.dot(halfExtents);
 
-		Vector3f margin = new Vector3f();
-		margin.set(getMargin(), getMargin(), getMargin());
+		float m = getMargin();
+		margin.set(m, m, m);
 		extent.add(margin);
 
 		aabbMin.sub(center, extent);
@@ -335,9 +345,10 @@ public class HeightfieldTerrainShape extends ConcaveShape
 	}
 
 	@Override
-	public Vector3f getLocalScaling(Vector3f arg0)
+	public Vector3f getLocalScaling(Vector3f v)
 	{
-		return m_localScaling;
+		v.set(m_localScaling);
+		return v;
 	}
 
 	@Override
@@ -355,7 +366,7 @@ public class HeightfieldTerrainShape extends ConcaveShape
 	@Override
 	public void setLocalScaling(Vector3f scaling)
 	{
-		m_localScaling = scaling;
+		m_localScaling.set(scaling);
 	}
 
 	// / This returns the "raw" (user's initial) height, not the actual height.
@@ -367,13 +378,13 @@ public class HeightfieldTerrainShape extends ConcaveShape
 		return m_heightfieldDataFloat[(y * m_heightStickWidth) + x] * m_heightScale;
 	}
 
-	public static int getQuantized(float x)
+	private static int getQuantized(float v)
 	{
-		if (x < 0.0)
+		if (v < 0.0)
 		{
-			return (int) (x - 0.5);
+			return (int) (v - 0.5);
 		}
-		return (int) (x + 0.5);
+		return (int) (v + 0.5);
 	}
 
 	// / given input vector, return quantized version
@@ -382,24 +393,34 @@ public class HeightfieldTerrainShape extends ConcaveShape
 	 *
 	 * "with clamp" means that we restrict the point to be in the heightfield's axis-aligned bounding box.
 	 */
-	private void quantizeWithClamp(int[] out, Vector3f clampedPoint)
+	private void quantizeWithClamp(int[] out, Vector3f point)
 	{
-
-		/*
-		 * btVector3 clampedPoint(point); 
-		clampedPoint.setMax(m_localAabbMin);
-		clampedPoint.setMin(m_localAabbMax);
-
-		 * clampedPoint.clampMax(m_localAabbMax,);
-		clampedPoint.clampMax(m_localAabbMax);
-		clampedPoint.clampMax(m_localAabbMax);
-
-		clampedPoint.clampMin(m_localAabbMin);
-		clampedPoint.clampMin(m_localAabbMin); ///CLAMPS
-		clampedPoint.clampMin(m_localAabbMin);*/
+		Vector3f clampedPoint = Stack.alloc(point);
+		VectorUtil.setMax(clampedPoint, m_localAabbMin);
+		VectorUtil.setMin(clampedPoint, m_localAabbMax);
 
 		out[0] = getQuantized(clampedPoint.x);
 		out[1] = getQuantized(clampedPoint.y);
 		out[2] = getQuantized(clampedPoint.z);
+	}
+
+	public int getHeightStickWidth()
+	{
+		return m_heightStickWidth;
+	}
+
+	public int getHeightStickLength()
+	{
+		return m_heightStickLength;
+	}
+
+	public float getMinHeight()
+	{
+		return m_minHeight;
+	}
+
+	public float getMaxHeight()
+	{
+		return m_maxHeight;
 	}
 }

@@ -13,8 +13,6 @@
             <zipfileset excludes="META-INF/*.SF" src="E:/Java/git/external_jars/external_jars/external jars/lwjgl-2.8.5/jar/lwjgl.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="E:/Java/git/external_jars/external_jars/external jars/lwjgl-2.8.5/jar/lwjgl_util.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="E:/Java/git/jbullet1.1/jbullet1.1/lib/jstackalloc/stack-alloc.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="E:/Java/git/jbullet1.1/jbullet1.1/lib/vecmath/vecmath.jar"/>
-        	<excludesfile name="E:/Java/git/jbullet1.1/jbullet1.1/lib/vecmath/vecmath.jar"/>
         </jar>
     </target>
 </project>
