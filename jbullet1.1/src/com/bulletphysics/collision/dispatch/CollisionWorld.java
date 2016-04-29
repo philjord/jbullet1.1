@@ -170,7 +170,7 @@ public class CollisionWorld {
 				// only clear the cached algorithms
 				//
 				getBroadphase().getOverlappingPairCache().cleanProxyFromPairs(bp, dispatcher1);
-				getBroadphase().destroyProxy(bp, dispatcher1);
+				getBroadphase().destroyProxy(bp, dispatcher1);				
 				collisionObject.setBroadphaseHandle(null);
 			}
 		}
@@ -555,7 +555,8 @@ public class CollisionWorld {
 
 			CollisionObject collisionObject = collisionObjects.getQuick(i);
 			// only perform raycast if filterMask matches
-			if (resultCallback.needsCollision(collisionObject.getBroadphaseHandle())) {
+			if (collisionObject.getBroadphaseHandle() != null &&
+					resultCallback.needsCollision(collisionObject.getBroadphaseHandle())) {
 				//RigidcollisionObject* collisionObject = ctrl->GetRigidcollisionObject();
 				collisionObject.getCollisionShape().getAabb(collisionObject.getWorldTransform(tmpTrans), collisionObjectAabbMin, collisionObjectAabbMax);
 
