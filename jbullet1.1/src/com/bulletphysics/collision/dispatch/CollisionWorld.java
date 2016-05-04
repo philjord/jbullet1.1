@@ -218,7 +218,7 @@ public class CollisionWorld {
 
 		// moving objects should be moderately sized, probably something wrong if not
 		tmp.sub(maxAabb, minAabb); // TODO: optimize
-		if (colObj.isStaticObject() || (tmp.lengthSquared() < 1e12f)) {
+		if (colObj.getBroadphaseHandle() != null && (colObj.isStaticObject() || (tmp.lengthSquared() < 1e12f))) {
 			bp.setAabb(colObj.getBroadphaseHandle(), minAabb, maxAabb, dispatcher1);
 		}
 		else {
