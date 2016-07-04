@@ -141,20 +141,24 @@ public class HeightfieldTerrainShape extends ConcaveShape
 
 	//deburners
 	private Vector3f v0 = new Vector3f();
-
 	private Vector3f v1 = new Vector3f();
-
 	private Vector3f v2 = new Vector3f();
+	
+	private Vector3f localAabbMin = new Vector3f();	
+	private Vector3f localAabbMax = new Vector3f();	
+	private int[] quantizedAabbMin = new int[3];
+	private int[] quantizedAabbMax = new int[3];
+	private Vector3f[] vertices = new Vector3f[3];
 
 	@Override
 	public void processAllTriangles(TriangleCallback callback, Vector3f aabbMin, Vector3f aabbMax)
 	{
-		Vector3f localAabbMin = new Vector3f();
+		
 		localAabbMin.x = aabbMin.x * (1.f / m_localScaling.x);
 		localAabbMin.y = aabbMin.y * (1.f / m_localScaling.y);
 		localAabbMin.z = aabbMin.z * (1.f / m_localScaling.z);
 
-		Vector3f localAabbMax = new Vector3f();
+		
 		localAabbMax.x = aabbMax.x * (1.f / m_localScaling.x);
 		localAabbMax.y = aabbMax.y * (1.f / m_localScaling.y);
 		localAabbMax.z = aabbMax.z * (1.f / m_localScaling.z);
@@ -163,8 +167,7 @@ public class HeightfieldTerrainShape extends ConcaveShape
 		localAabbMax.add(m_localOrigin);
 
 		// quantize the aabbMin and aabbMax, and adjust the start/end ranges
-		int[] quantizedAabbMin = new int[3];
-		int[] quantizedAabbMax = new int[3];
+		
 		quantizeWithClamp(quantizedAabbMin, localAabbMin);
 		quantizeWithClamp(quantizedAabbMax, localAabbMax);
 
@@ -221,16 +224,18 @@ public class HeightfieldTerrainShape extends ConcaveShape
 			break;
 		}
 		}
-
+		
+		vertices[0] = v0;
+		vertices[1] = v1;
+		vertices[2] = v2;
+		
 		for (int j = startJ; j < endJ; j++)
 		{
 			for (int x = startX; x < endX; x++)
 			{
 				// Vector3f vertices[3];
-				Vector3f[] vertices = new Vector3f[3];
-				vertices[0] = v0;
-				vertices[1] = v1;
-				vertices[2] = v2;
+				
+				
 				if (m_flipQuadEdges || (m_useDiamondSubdivision && (((j + x) & 1) != 0)))
 				{
 					// first triangle
@@ -303,12 +308,12 @@ public class HeightfieldTerrainShape extends ConcaveShape
 	}
 
 	//deburners
-	Vector3f halfExtents = new Vector3f();
-	Matrix3f abs_b = new Matrix3f();
-	Vector3f tmp = new Vector3f();
-	Vector3f center = new Vector3f();
-	Vector3f extent = new Vector3f();
-	Vector3f margin = new Vector3f();
+	private Vector3f halfExtents = new Vector3f();
+	private Matrix3f abs_b = new Matrix3f();
+	private Vector3f tmp = new Vector3f();
+	private Vector3f center = new Vector3f();
+	private Vector3f extent = new Vector3f();
+	private Vector3f margin = new Vector3f();
 
 	@Override
 	public void getAabb(Transform t, Vector3f aabbMin, Vector3f aabbMax)
