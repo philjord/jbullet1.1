@@ -391,6 +391,13 @@ public class CollisionWorld {
 			this.collisionObject = collisionObject;
 			this.triangleMesh = triangleMesh;
 		}
+		public BridgeTriangleConvexcastCallback(){}
+		public void init (ConvexShape castShape, Transform from, Transform to, ConvexResultCallback resultCallback, CollisionObject collisionObject, ConcaveShape triangleMesh, Transform triangleToWorld) {
+			super.init(castShape, from, to, triangleToWorld, triangleMesh.getMargin());
+			this.resultCallback = resultCallback;
+			this.collisionObject = collisionObject;
+			this.triangleMesh = triangleMesh;
+		}
 
 		@Override
 		public float reportHit(Vector3f hitNormalLocal, Vector3f hitPointLocal, float hitFraction, int partId, int triangleIndex) {
@@ -406,22 +413,29 @@ public class CollisionWorld {
 		}
 	}
 
+	
+	private static VoronoiSimplexSolver simplexSolver = new VoronoiSimplexSolver();
+	//private GjkEpaPenetrationDepthSolver gjkEpaPenetrationSolver = new GjkEpaPenetrationDepthSolver();
+	private static GjkConvexCast convexCaster2 = new GjkConvexCast();//castShape, convexShape, simplexSolver);
+	private static CastResult castResult = new CastResult();
+	private static LocalConvexResult localConvexResult = new LocalConvexResult();
+	private static BridgeTriangleConvexcastCallback tccb = new BridgeTriangleConvexcastCallback();
 	/**
 	 * objectQuerySingle performs a collision detection query and calls the resultCallback. It is used internally by rayTest.
 	 */
 	public static void objectQuerySingle(ConvexShape castShape, Transform convexFromTrans, Transform convexToTrans, CollisionObject collisionObject, CollisionShape collisionShape, Transform colObjWorldTransform, ConvexResultCallback resultCallback, float allowedPenetration) {
 		if (collisionShape.isConvex()) {
-			CastResult castResult = new CastResult();
+			
 			castResult.allowedPenetration = allowedPenetration;
 			castResult.fraction = 1f; // ??
 
 			ConvexShape convexShape = (ConvexShape) collisionShape;
-			VoronoiSimplexSolver simplexSolver = new VoronoiSimplexSolver();
-			GjkEpaPenetrationDepthSolver gjkEpaPenetrationSolver = new GjkEpaPenetrationDepthSolver();
+			//VoronoiSimplexSolver simplexSolver = new VoronoiSimplexSolver();
+			//GjkEpaPenetrationDepthSolver gjkEpaPenetrationSolver = new GjkEpaPenetrationDepthSolver();
 
 			// JAVA TODO: should be convexCaster1
 			//ContinuousConvexCollision convexCaster1(castShape,convexShape,&simplexSolver,&gjkEpaPenetrationSolver);
-			GjkConvexCast convexCaster2 = new GjkConvexCast(castShape, convexShape, simplexSolver);
+			convexCaster2.init(castShape, convexShape, simplexSolver);
 			//btSubsimplexConvexCast convexCaster3(castShape,convexShape,&simplexSolver);
 
 			ConvexCast castPtr = convexCaster2;
@@ -431,7 +445,7 @@ public class CollisionWorld {
 				if (castResult.normal.lengthSquared() > 0.0001f) {
 					if (castResult.fraction < resultCallback.closestHitFraction) {
 						castResult.normal.normalize();
-						LocalConvexResult localConvexResult = new LocalConvexResult(collisionObject, null, castResult.normal, castResult.hitPoint, castResult.fraction);
+						localConvexResult.init(collisionObject, null, castResult.normal, castResult.hitPoint, castResult.fraction);
 
 						boolean normalInWorldSpace = true;
 						resultCallback.addSingleResult(localConvexResult, normalInWorldSpace);
@@ -460,7 +474,7 @@ public class CollisionWorld {
 					tmpMat.mul(worldTocollisionObject.basis, convexToTrans.basis);
 					rotationXform.set(tmpMat);
 
-					BridgeTriangleConvexcastCallback tccb = new BridgeTriangleConvexcastCallback(castShape, convexFromTrans, convexToTrans, resultCallback, collisionObject, triangleMesh, colObjWorldTransform);
+					tccb.init(castShape, convexFromTrans, convexToTrans, resultCallback, collisionObject, triangleMesh, colObjWorldTransform);
 					tccb.hitFraction = resultCallback.closestHitFraction;
 					tccb.normalInWorldSpace = true;
 					
@@ -488,7 +502,7 @@ public class CollisionWorld {
 					tmpMat.mul(worldTocollisionObject.basis, convexToTrans.basis);
 					rotationXform.set(tmpMat);
 
-					BridgeTriangleConvexcastCallback tccb = new BridgeTriangleConvexcastCallback(castShape, convexFromTrans, convexToTrans, resultCallback, collisionObject, triangleMesh, colObjWorldTransform);
+					tccb.init(castShape, convexFromTrans, convexToTrans, resultCallback, collisionObject, triangleMesh, colObjWorldTransform);
 					tccb.hitFraction = resultCallback.closestHitFraction;
 					tccb.normalInWorldSpace = false;
 					Vector3f boxMinLocal = Stack.alloc(Vector3f.class);
@@ -725,7 +739,16 @@ public class CollisionWorld {
 		public final Vector3f hitPointLocal = new Vector3f();
 		public float hitFraction;
 
+		
 		public LocalConvexResult(CollisionObject hitCollisionObject, LocalShapeInfo localShapeInfo, Vector3f hitNormalLocal, Vector3f hitPointLocal, float hitFraction) {
+			this.hitCollisionObject = hitCollisionObject;
+			this.localShapeInfo = localShapeInfo;
+			this.hitNormalLocal.set(hitNormalLocal);
+			this.hitPointLocal.set(hitPointLocal);
+			this.hitFraction = hitFraction;
+		}
+		public LocalConvexResult(){}
+		public void init(CollisionObject hitCollisionObject, LocalShapeInfo localShapeInfo, Vector3f hitNormalLocal, Vector3f hitPointLocal, float hitFraction) {
 			this.hitCollisionObject = hitCollisionObject;
 			this.localShapeInfo = localShapeInfo;
 			this.hitNormalLocal.set(hitNormalLocal);

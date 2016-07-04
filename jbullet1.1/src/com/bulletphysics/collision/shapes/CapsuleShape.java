@@ -58,7 +58,16 @@ public class CapsuleShape extends ConvexInternalShape {
 		upAxis = 1;
 		implicitShapeDimensions.set(radius, 0.5f * height, radius);
 	}
-
+	
+	
+	
+	
+	private Vector3f vec = new Vector3f();
+	private Vector3f vtx = new Vector3f();
+	private Vector3f tmp1 = new Vector3f();
+	private Vector3f tmp2 = new Vector3f();
+	private Vector3f pos = new Vector3f();
+	
 	@Override
 	public Vector3f localGetSupportingVertexWithoutMargin(Vector3f vec0, Vector3f out) {
 		Vector3f supVec = out;
@@ -66,24 +75,25 @@ public class CapsuleShape extends ConvexInternalShape {
 
 		float maxDot = -1e30f;
 
-		Vector3f vec = Stack.alloc(vec0);
-		float lenSqr = vec.lengthSquared();
+		//Vector3f vec = Stack.alloc(vec0);
+		vec.set(vec0);
+		float lenSqr = vec.length();
 		if (lenSqr < 0.0001f) {
 			vec.set(1f, 0f, 0f);
 		}
 		else {
-			float rlen = 1f / (float) Math.sqrt(lenSqr);
+			float rlen = 1f / lenSqr;
 			vec.scale(rlen);
 		}
 
-		Vector3f vtx = Stack.alloc(Vector3f.class);
+		//Vector3f vtx = Stack.alloc(Vector3f.class);
 		float newDot;
 
 		float radius = getRadius();
 
-		Vector3f tmp1 = Stack.alloc(Vector3f.class);
-		Vector3f tmp2 = Stack.alloc(Vector3f.class);
-		Vector3f pos = Stack.alloc(Vector3f.class);
+		//Vector3f tmp1 = Stack.alloc(Vector3f.class);
+		//Vector3f tmp2 = Stack.alloc(Vector3f.class);
+		//Vector3f pos = Stack.alloc(Vector3f.class);
 
 		{
 			pos.set(0f, 0f, 0f);

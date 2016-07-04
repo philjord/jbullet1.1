@@ -56,8 +56,20 @@ public class SubsimplexConvexCast extends ConvexCast {
 	private SimplexSolverInterface simplexSolver;
 	private ConvexShape convexA;
 	private ConvexShape convexB;
-
+	
+	
 	public SubsimplexConvexCast(ConvexShape shapeA, ConvexShape shapeB, SimplexSolverInterface simplexSolver) {
+		this.convexA = shapeA;
+		this.convexB = shapeB;
+		this.simplexSolver = simplexSolver;
+	}
+	// JAVA NOTE: added
+	public SubsimplexConvexCast()
+	{
+		
+	}
+	// JAVA NOTE: added
+	public void init(ConvexShape shapeA, ConvexShape shapeB, SimplexSolverInterface simplexSolver) {
 		this.convexA = shapeA;
 		this.convexB = shapeB;
 		this.simplexSolver = simplexSolver;

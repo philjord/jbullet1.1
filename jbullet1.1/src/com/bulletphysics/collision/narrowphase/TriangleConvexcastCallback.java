@@ -51,25 +51,37 @@ public abstract class TriangleConvexcastCallback extends TriangleCallback {
 		this.hitFraction = 1f;
 		this.triangleCollisionMargin = triangleCollisionMargin;
 	}
-	
+	public TriangleConvexcastCallback(){}
+	public void init(ConvexShape convexShape, Transform convexShapeFrom, Transform convexShapeTo, Transform triangleToWorld, float triangleCollisionMargin) {
+		this.convexShape = convexShape;
+		this.convexShapeFrom.set(convexShapeFrom);
+		this.convexShapeTo.set(convexShapeTo);
+		this.triangleToWorld.set(triangleToWorld);
+		this.hitFraction = 1f;
+		this.triangleCollisionMargin = triangleCollisionMargin;
+	}
+	private VoronoiSimplexSolver simplexSolver = new VoronoiSimplexSolver();
+	//private GjkEpaPenetrationDepthSolver gjkEpaPenetrationSolver = new GjkEpaPenetrationDepthSolver();
+	private TriangleShape triangleShape = new TriangleShape();
+	private SubsimplexConvexCast convexCaster = new SubsimplexConvexCast();
+	private CastResult castResult = new CastResult();
+
 	public void processTriangle(Vector3f[] triangle, int partId, int triangleIndex) {
-		TriangleShape triangleShape = new TriangleShape(triangle[0], triangle[1], triangle[2]);
+		triangleShape.init(triangle[0], triangle[1], triangle[2]);
 		triangleShape.setMargin(triangleCollisionMargin);
 
-		VoronoiSimplexSolver simplexSolver = new VoronoiSimplexSolver();
-		GjkEpaPenetrationDepthSolver gjkEpaPenetrationSolver = new GjkEpaPenetrationDepthSolver();
-
+	
 		//#define  USE_SUBSIMPLEX_CONVEX_CAST 1
 		//if you reenable USE_SUBSIMPLEX_CONVEX_CAST see commented out code below
 		//#ifdef USE_SUBSIMPLEX_CONVEX_CAST
 		// TODO: implement ContinuousConvexCollision
-		SubsimplexConvexCast convexCaster = new SubsimplexConvexCast(convexShape, triangleShape, simplexSolver);
+		convexCaster.init(convexShape, triangleShape, simplexSolver);
 		//#else
 		// //btGjkConvexCast	convexCaster(m_convexShape,&triangleShape,&simplexSolver);
 		//btContinuousConvexCollision convexCaster(m_convexShape,&triangleShape,&simplexSolver,&gjkEpaPenetrationSolver);
 		//#endif //#USE_SUBSIMPLEX_CONVEX_CAST
 
-		CastResult castResult = new CastResult();
+		
 		castResult.fraction = 1f;
 		if (convexCaster.calcTimeOfImpact(convexShapeFrom, convexShapeTo, triangleToWorld, triangleToWorld, castResult)) {
 			// add hit
