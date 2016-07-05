@@ -51,7 +51,7 @@ public class BvhTriangleMeshShape extends TriangleMeshShape {
 	private boolean useQuantizedAabbCompression;
 	private boolean ownsBvh;
 	
-	private ObjectPool<MyNodeOverlapCallback> myNodeCallbacks = ObjectPool.get(MyNodeOverlapCallback.class);
+	//private ObjectPool<MyNodeOverlapCallback> myNodeCallbacks = ObjectPool.get(MyNodeOverlapCallback.class);
 	
 	public BvhTriangleMeshShape() {
 		super(null);
@@ -129,23 +129,25 @@ public class BvhTriangleMeshShape extends TriangleMeshShape {
 	}
 
 	public void performRaycast(TriangleCallback callback, Vector3f raySource, Vector3f rayTarget) {
-		MyNodeOverlapCallback myNodeCallback = myNodeCallbacks.get();
+	//	MyNodeOverlapCallback myNodeCallback = myNodeCallbacks.get();
 		myNodeCallback.init(callback, meshInterface);
 
 		bvh.reportRayOverlappingNodex(myNodeCallback, raySource, rayTarget);
 		
-		myNodeCallbacks.release(myNodeCallback);
+	//	myNodeCallbacks.release(myNodeCallback);
 	}
 	
 	public void performConvexcast(TriangleCallback callback, Vector3f raySource, Vector3f rayTarget, Vector3f aabbMin, Vector3f aabbMax) {
-		MyNodeOverlapCallback myNodeCallback = myNodeCallbacks.get();
+	//	MyNodeOverlapCallback myNodeCallback = myNodeCallbacks.get();
 		myNodeCallback.init(callback, meshInterface);
 
 		bvh.reportBoxCastOverlappingNodex(myNodeCallback, raySource, rayTarget, aabbMin, aabbMax);
 
-		myNodeCallbacks.release(myNodeCallback);
+	//	myNodeCallbacks.release(myNodeCallback);
 	}
 
+	
+	private MyNodeOverlapCallback myNodeCallback = new MyNodeOverlapCallback();
 	/**
 	 * Perform bvh tree traversal and report overlapping triangles to 'callback'.
 	 */
@@ -157,12 +159,12 @@ public class BvhTriangleMeshShape extends TriangleMeshShape {
 		//#else
 
 		// first get all the nodes
-		MyNodeOverlapCallback myNodeCallback = myNodeCallbacks.get();
+	//	MyNodeOverlapCallback myNodeCallback = myNodeCallbacks.get();
 		myNodeCallback.init(callback, meshInterface);
 
 		bvh.reportAabbOverlappingNodex(myNodeCallback, aabbMin, aabbMax);
 
-		myNodeCallbacks.release(myNodeCallback);
+	//	myNodeCallbacks.release(myNodeCallback);
 		//#endif//DISABLE_BVH
 	}
 	

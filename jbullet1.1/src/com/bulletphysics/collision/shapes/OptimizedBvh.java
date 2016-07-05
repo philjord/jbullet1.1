@@ -547,7 +547,7 @@ public class OptimizedBvh implements Serializable {
 	}
 
 	protected boolean testQuantizedAabbAgainstQuantizedAabb(long aabbMin1, long aabbMax1, long aabbMin2, long aabbMax2) {
-		int aabbMin1_0 = QuantizedBvhNodes.getCoord(aabbMin1, 0);
+	/*	int aabbMin1_0 = QuantizedBvhNodes.getCoord(aabbMin1, 0);
 		int aabbMin1_1 = QuantizedBvhNodes.getCoord(aabbMin1, 1);
 		int aabbMin1_2 = QuantizedBvhNodes.getCoord(aabbMin1, 2);
 
@@ -561,7 +561,24 @@ public class OptimizedBvh implements Serializable {
 
 		int aabbMax2_0 = QuantizedBvhNodes.getCoord(aabbMax2, 0);
 		int aabbMax2_1 = QuantizedBvhNodes.getCoord(aabbMax2, 1);
-		int aabbMax2_2 = QuantizedBvhNodes.getCoord(aabbMax2, 2);
+		int aabbMax2_2 = QuantizedBvhNodes.getCoord(aabbMax2, 2);*/
+		// the above with method and case removed
+		int aabbMin1_0 = (int)((aabbMin1 & 0x00000000FFFFL)) & 0xFFFF; 
+		int aabbMin1_1 = (int)((aabbMin1 & 0x0000FFFF0000L) >>> 16) & 0xFFFF; 
+		int aabbMin1_2 = (int)((aabbMin1 & 0xFFFF00000000L) >>> 32) & 0xFFFF; 
+
+		int aabbMax1_0 = (int)((aabbMax1 & 0x00000000FFFFL)) & 0xFFFF; 
+		int aabbMax1_1 = (int)((aabbMax1 & 0x0000FFFF0000L) >>> 16) & 0xFFFF; 
+		int aabbMax1_2 = (int)((aabbMax1 & 0xFFFF00000000L) >>> 32) & 0xFFFF; 
+
+		int aabbMin2_0 = (int)((aabbMin2 & 0x00000000FFFFL)) & 0xFFFF; 
+		int aabbMin2_1 = (int)((aabbMin2 & 0x0000FFFF0000L) >>> 16) & 0xFFFF; 
+		int aabbMin2_2 = (int)((aabbMin2 & 0xFFFF00000000L) >>> 32) & 0xFFFF; 
+
+		int aabbMax2_0 = (int)((aabbMax2 & 0x00000000FFFFL)) & 0xFFFF; 
+		int aabbMax2_1 = (int)((aabbMax2 & 0x0000FFFF0000L) >>> 16) & 0xFFFF; 
+		int aabbMax2_2 = (int)((aabbMax2 & 0xFFFF00000000L) >>> 32) & 0xFFFF; 
+ 
 
 		boolean overlap = true;
 		overlap = (aabbMin1_0 > aabbMax2_0 || aabbMax1_0 < aabbMin2_0) ? false : overlap;
@@ -1005,15 +1022,17 @@ public class OptimizedBvh implements Serializable {
 			reportAabbOverlappingNodex(nodeCallback, qaabbMin, qaabbMax);
 		}
 	}
-	
+	private Vector3f clampedPoint = new Vector3f();
+	private Vector3f v = new Vector3f();
 	public long quantizeWithClamp(Vector3f point) {
 		assert (useQuantization);
 
-		Vector3f clampedPoint = Stack.alloc(point);
+		//Vector3f clampedPoint = Stack.alloc(point);
+		clampedPoint.set(point);
 		VectorUtil.setMax(clampedPoint, bvhAabbMin);
 		VectorUtil.setMin(clampedPoint, bvhAabbMax);
 
-		Vector3f v = Stack.alloc(Vector3f.class);
+		//Vector3f v = Stack.alloc(Vector3f.class);
 		v.sub(clampedPoint, bvhAabbMin);
 		VectorUtil.mul(v, v, bvhQuantization);
 

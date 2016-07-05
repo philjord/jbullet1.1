@@ -49,6 +49,9 @@ public class Transform {
 	
 	/** Translation vector of this Transform. */
 	public final Vector3f origin = new Vector3f();
+	
+	//performance temp
+	private final Vector3f vec = new Vector3f();
 
 	public Transform() {
 	}
@@ -102,7 +105,7 @@ public class Transform {
 	}
 	
 	public void mul(Transform tr) {
-		Vector3f vec = Stack.alloc(tr.origin);
+		vec.set(tr.origin);
 		transform(vec);
 
 		basis.mul(tr.basis);
@@ -111,7 +114,7 @@ public class Transform {
 
 	@StaticAlloc
 	public void mul(Transform tr1, Transform tr2) {
-		Vector3f vec = Stack.alloc(tr2.origin);
+		vec.set(tr2.origin);
 		tr1.transform(vec);
 
 		basis.mul(tr1.basis, tr2.basis);

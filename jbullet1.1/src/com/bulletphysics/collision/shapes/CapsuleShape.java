@@ -168,24 +168,28 @@ public class CapsuleShape extends ConvexInternalShape {
 		return BroadphaseNativeType.CAPSULE_SHAPE_PROXYTYPE;
 	}
 	
+	//deburners
+	Vector3f tmp = new Vector3f();
+	Vector3f halfExtents = new Vector3f();
+	Vector3f extent  = new Vector3f();
+	Matrix3f abs_b = new Matrix3f();
 	@Override
 	public void getAabb(Transform t, Vector3f aabbMin, Vector3f aabbMax) {
-		Vector3f tmp = Stack.alloc(Vector3f.class);
+		float radius = getRadius();
+		halfExtents.set(radius, radius, radius);
+		VectorUtil.setCoord(halfExtents, upAxis, radius + getHalfHeight());
 
-		Vector3f halfExtents = Stack.alloc(Vector3f.class);
-		halfExtents.set(getRadius(), getRadius(), getRadius());
-		VectorUtil.setCoord(halfExtents, upAxis, getRadius() + getHalfHeight());
+		float margin = getMargin();
+		halfExtents.x += margin;
+		halfExtents.y += margin;
+		halfExtents.z += margin;
 
-		halfExtents.x += getMargin();
-		halfExtents.y += getMargin();
-		halfExtents.z += getMargin();
-
-		Matrix3f abs_b = Stack.alloc(Matrix3f.class);
+		 
 		abs_b.set(t.basis);
 		MatrixUtil.absolute(abs_b);
 
 		Vector3f center = t.origin;
-		Vector3f extent = Stack.alloc(Vector3f.class);
+		
 
 		abs_b.getRow(0, tmp);
 		extent.x = tmp.dot(halfExtents);

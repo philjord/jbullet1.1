@@ -148,15 +148,15 @@ public class VectorUtil {
 	}
 	
 	public static void setMin(Vector3f a, Vector3f b) {
-		a.x = Math.min(a.x, b.x);
-		a.y = Math.min(a.y, b.y);
-		a.z = Math.min(a.z, b.z);
+		a.x = (a.x <= b.x) ? a.x : b.x;//Math.min(a.x, b.x);
+		a.y = (a.y <= b.y) ? a.y : b.y;//Math.min(a.y, b.y);
+		a.z = (a.z <= b.z) ? a.z : b.z;//Math.min(a.z, b.z);		
 	}
 	
 	public static void setMax(Vector3f a, Vector3f b) {
-		a.x = Math.max(a.x, b.x);
-		a.y = Math.max(a.y, b.y);
-		a.z = Math.max(a.z, b.z);
+		a.x = (a.x >= b.x) ? a.x : b.x;//Math.max(a.x, b.x);
+		a.y = (a.y >= b.y) ? a.y : b.y;//Math.max(a.y, b.y);
+		a.z = (a.z >= b.z) ? a.z : b.z;//Math.max(a.z, b.z);		
 	}
 	
 	public static float dot3(Vector4f v0, Vector3f v1) {

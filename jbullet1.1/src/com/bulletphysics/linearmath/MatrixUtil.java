@@ -44,15 +44,15 @@ public class MatrixUtil {
 	}
 	
 	public static void absolute(Matrix3f mat) {
-		mat.m00 = Math.abs(mat.m00);
-		mat.m01 = Math.abs(mat.m01);
-		mat.m02 = Math.abs(mat.m02);
-		mat.m10 = Math.abs(mat.m10);
-		mat.m11 = Math.abs(mat.m11);
-		mat.m12 = Math.abs(mat.m12);
-		mat.m20 = Math.abs(mat.m20);
-		mat.m21 = Math.abs(mat.m21);
-		mat.m22 = Math.abs(mat.m22);
+		mat.m00 = (mat.m00 <= 0.0F) ? 0.0F - mat.m00 : mat.m00;
+		mat.m01 = (mat.m01 <= 0.0F) ? 0.0F - mat.m01 : mat.m01;
+		mat.m02 = (mat.m02 <= 0.0F) ? 0.0F - mat.m02 : mat.m02;
+		mat.m10 = (mat.m10 <= 0.0F) ? 0.0F - mat.m10 : mat.m10;
+		mat.m11 = (mat.m11 <= 0.0F) ? 0.0F - mat.m11 : mat.m11;
+		mat.m12 = (mat.m12 <= 0.0F) ? 0.0F - mat.m12 : mat.m12;
+		mat.m20 = (mat.m20 <= 0.0F) ? 0.0F - mat.m20 : mat.m20;
+		mat.m21 = (mat.m21 <= 0.0F) ? 0.0F - mat.m21 : mat.m21;
+		mat.m22 = (mat.m22 <= 0.0F) ? 0.0F - mat.m22 : mat.m22;
 	}
 	
 	public static void setFromOpenGLSubMatrix(Matrix3f mat, float[] m) {
