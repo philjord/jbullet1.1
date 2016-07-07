@@ -107,7 +107,7 @@ public class GhostObject extends CollisionObject {
 			CollisionObject collisionObject = overlappingObjects.getQuick(i);
 
 			// only perform raycast if filterMask matches
-			if (resultCallback.needsCollision(collisionObject.getBroadphaseHandle())) {
+			if (collisionObject.getBroadphaseHandle() !=null && resultCallback.needsCollision(collisionObject.getBroadphaseHandle())) {
 				//RigidcollisionObject* collisionObject = ctrl->GetRigidcollisionObject();
 				Vector3f collisionObjectAabbMin = Stack.alloc(Vector3f.class);
 				Vector3f collisionObjectAabbMax = Stack.alloc(Vector3f.class);
