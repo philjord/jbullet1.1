@@ -53,6 +53,8 @@ public class HeightfieldTerrainShape extends ConcaveShape
 
 	protected Vector3f m_localOrigin = new Vector3f();
 
+	private Vector3f localHalfExtents = new Vector3f();
+
 	// /terrain data
 	protected int m_heightStickWidth;
 
@@ -136,16 +138,16 @@ public class HeightfieldTerrainShape extends ConcaveShape
 		m_localOrigin.x = m_localOrigin.x * 0.5f;
 		m_localOrigin.y = m_localOrigin.y * 0.5f;
 		m_localOrigin.z = m_localOrigin.z * 0.5f;
-
+		updateExtents();
 	}
 
 	//deburners
 	private Vector3f v0 = new Vector3f();
 	private Vector3f v1 = new Vector3f();
 	private Vector3f v2 = new Vector3f();
-	
-	private Vector3f localAabbMin = new Vector3f();	
-	private Vector3f localAabbMax = new Vector3f();	
+
+	private Vector3f localAabbMin = new Vector3f();
+	private Vector3f localAabbMax = new Vector3f();
 	private int[] quantizedAabbMin = new int[3];
 	private int[] quantizedAabbMax = new int[3];
 	private Vector3f[] vertices = new Vector3f[3];
@@ -153,12 +155,11 @@ public class HeightfieldTerrainShape extends ConcaveShape
 	@Override
 	public void processAllTriangles(TriangleCallback callback, Vector3f aabbMin, Vector3f aabbMax)
 	{
-		
+
 		localAabbMin.x = aabbMin.x * (1.f / m_localScaling.x);
 		localAabbMin.y = aabbMin.y * (1.f / m_localScaling.y);
 		localAabbMin.z = aabbMin.z * (1.f / m_localScaling.z);
 
-		
 		localAabbMax.x = aabbMax.x * (1.f / m_localScaling.x);
 		localAabbMax.y = aabbMax.y * (1.f / m_localScaling.y);
 		localAabbMax.z = aabbMax.z * (1.f / m_localScaling.z);
@@ -167,7 +168,7 @@ public class HeightfieldTerrainShape extends ConcaveShape
 		localAabbMax.add(m_localOrigin);
 
 		// quantize the aabbMin and aabbMax, and adjust the start/end ranges
-		
+
 		quantizeWithClamp(quantizedAabbMin, localAabbMin);
 		quantizeWithClamp(quantizedAabbMax, localAabbMax);
 
@@ -224,18 +225,17 @@ public class HeightfieldTerrainShape extends ConcaveShape
 			break;
 		}
 		}
-		
+
 		vertices[0] = v0;
 		vertices[1] = v1;
 		vertices[2] = v2;
-		
+
 		for (int j = startJ; j < endJ; j++)
 		{
 			for (int x = startX; x < endX; x++)
 			{
 				// Vector3f vertices[3];
-				
-				
+
 				if (m_flipQuadEdges || (m_useDiamondSubdivision && (((j + x) & 1) != 0)))
 				{
 					// first triangle
@@ -307,46 +307,45 @@ public class HeightfieldTerrainShape extends ConcaveShape
 		inertia.set(0.f, 0.f, 0.f);
 	}
 
-	//deburners
-	private Vector3f halfExtents = new Vector3f();
+	//TODO: compound shape using margin but not scale!!
+	// margin is added in at the end of the end of getAABB
+	private void updateExtents()
+	{
+		localHalfExtents.sub(m_localAabbMax, m_localAabbMin);
+		localHalfExtents.x = localHalfExtents.x * m_localScaling.x * 0.5f;
+		localHalfExtents.y = localHalfExtents.y * m_localScaling.y * 0.5f;
+		localHalfExtents.z = localHalfExtents.z * m_localScaling.z * 0.5f;
+
+	}
+
+	//deburners	
 	private Matrix3f abs_b = new Matrix3f();
-	private Vector3f tmp = new Vector3f();
 	private Vector3f center = new Vector3f();
 	private Vector3f extent = new Vector3f();
-	private Vector3f margin = new Vector3f();
 
 	@Override
 	public void getAabb(Transform t, Vector3f aabbMin, Vector3f aabbMax)
 	{
+		synchronized (abs_b)
+		{
 
-		halfExtents.set(m_localAabbMax);
-		halfExtents.sub(m_localAabbMin);
-		halfExtents.x = halfExtents.x * m_localScaling.x * 0.5f;
-		halfExtents.y = halfExtents.y * m_localScaling.y * 0.5f;
-		halfExtents.z = halfExtents.z * m_localScaling.z * 0.5f;
+			/*Vector3f localOrigin(0, 0, 0);
+			localOrigin[m_upAxis] = (m_minHeight + m_maxHeight) * 0.5f;  
+			localOrigin *= m_localScaling;*/
 
-		/*Vector3f localOrigin(0, 0, 0);
-		localOrigin[m_upAxis] = (m_minHeight + m_maxHeight) * 0.5f;  
-		localOrigin *= m_localScaling;*/
+			abs_b.set(t.basis);
+			MatrixUtil.absolute(abs_b);
 
-		abs_b.set(t.basis);
-		MatrixUtil.absolute(abs_b);
+			center.set(t.origin);
 
-		center.set(t.origin);
+			// massively unrolled 
+			extent.x = (abs_b.m00 * localHalfExtents.x + abs_b.m01 * localHalfExtents.y + abs_b.m02 * localHalfExtents.z) + collisionMargin;
+			extent.y = (abs_b.m10 * localHalfExtents.x + abs_b.m11 * localHalfExtents.y + abs_b.m12 * localHalfExtents.z) + collisionMargin;
+			extent.z = (abs_b.m20 * localHalfExtents.x + abs_b.m21 * localHalfExtents.y + abs_b.m22 * localHalfExtents.z) + collisionMargin;
 
-		abs_b.getRow(0, tmp);
-		extent.x = tmp.dot(halfExtents);
-		abs_b.getRow(1, tmp);
-		extent.y = tmp.dot(halfExtents);
-		abs_b.getRow(2, tmp);
-		extent.z = tmp.dot(halfExtents);
-
-		float m = getMargin();
-		margin.set(m, m, m);
-		extent.add(margin);
-
-		aabbMin.sub(center, extent);
-		aabbMax.add(center, extent);
+			aabbMin.sub(center, extent);
+			aabbMax.add(center, extent);
+		}
 	}
 
 	@Override
@@ -372,6 +371,7 @@ public class HeightfieldTerrainShape extends ConcaveShape
 	public void setLocalScaling(Vector3f scaling)
 	{
 		m_localScaling.set(scaling);
+		updateExtents();
 	}
 
 	// / This returns the "raw" (user's initial) height, not the actual height.

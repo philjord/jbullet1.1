@@ -23,14 +23,16 @@
 
 package com.bulletphysics.collision.shapes;
 
+import javax.vecmath.Matrix3f;
+import javax.vecmath.Vector3f;
+
 import com.bulletphysics.collision.broadphase.BroadphaseNativeType;
 import com.bulletphysics.linearmath.MatrixUtil;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.linearmath.VectorUtil;
 import com.bulletphysics.util.ObjectArrayList;
+
 import cz.advel.stack.Stack;
-import javax.vecmath.Matrix3f;
-import javax.vecmath.Vector3f;
 
 // JAVA NOTE: CompoundShape from 2.71
 
@@ -42,18 +44,19 @@ import javax.vecmath.Vector3f;
  */
 public class CompoundShape extends CollisionShape
 {
-
 	private final ObjectArrayList<CompoundShapeChild> children = new ObjectArrayList<CompoundShapeChild>();
 
 	private final Vector3f localAabbMin = new Vector3f(1e30f, 1e30f, 1e30f);
 
 	private final Vector3f localAabbMax = new Vector3f(-1e30f, -1e30f, -1e30f);
 
+	private Vector3f localHalfExtents = new Vector3f();
+
+	private Vector3f localCenter = new Vector3f();
+
 	private OptimizedBvh aabbTree = null;
 
 	private float collisionMargin = 0f;
-
-	protected final Vector3f localScaling = new Vector3f(1f, 1f, 1f);
 
 	public void addChildShape(Transform localTransform, CollisionShape shape)
 	{
@@ -85,6 +88,7 @@ public class CompoundShape extends CollisionShape
 		//		}
 		VectorUtil.setMin(this.localAabbMin, _localAabbMin);
 		VectorUtil.setMax(this.localAabbMax, _localAabbMax);
+		updateCenterAndExtents();
 	}
 
 	public void updateChildTransform(int childIndex, Transform newChildTransform)
@@ -92,11 +96,11 @@ public class CompoundShape extends CollisionShape
 		children.getQuick(childIndex).transform.set(newChildTransform);
 
 		///update the dynamic aabb tree
-		Vector3f _localAabbMin = Stack.alloc(Vector3f.class), _localAabbMax = Stack.alloc(Vector3f.class);
-		children.getQuick(childIndex).childShape.getAabb(newChildTransform, _localAabbMin, _localAabbMax);
+		//Vector3f _localAabbMin = Stack.alloc(Vector3f.class), _localAabbMax = Stack.alloc(Vector3f.class);
+		//children.getQuick(childIndex).childShape.getAabb(newChildTransform, _localAabbMin, _localAabbMax);
 
-		VectorUtil.setMin(this.localAabbMin, _localAabbMin);
-		VectorUtil.setMax(this.localAabbMax, _localAabbMax);
+		//VectorUtil.setMin(this.localAabbMin, _localAabbMin);
+		//VectorUtil.setMax(this.localAabbMax, _localAabbMax);
 
 		recalculateLocalAabb();
 	}
@@ -150,6 +154,12 @@ public class CompoundShape extends CollisionShape
 		return children.getQuick(index).childShape;
 	}
 
+	/**
+	 * DO NOT alter this, use updateChildTransform()
+	 * @param index
+	 * @param out
+	 * @return
+	 */
 	public Transform getChildTransform(int index, Transform out)
 	{
 		out.set(children.getQuick(index).transform);
@@ -161,41 +171,48 @@ public class CompoundShape extends CollisionShape
 		return children;
 	}
 
+	//TODO: why is local scaling ignored, I suspect it should not be used for compound shapes??
+	private void updateCenterAndExtents()
+	{
+		localHalfExtents.sub(localAabbMax, localAabbMin);
+		localHalfExtents.x = (localHalfExtents.x * 0.5f) + collisionMargin;
+		localHalfExtents.y = (localHalfExtents.y * 0.5f) + collisionMargin;
+		localHalfExtents.z = (localHalfExtents.z * 0.5f) + collisionMargin;
+
+		localCenter.add(localAabbMax, localAabbMin);
+		localCenter.x *= 0.5f;
+		localCenter.y *= 0.5f;
+		localCenter.z *= 0.5f;
+	}
+
+	//deburners
+	private Matrix3f abs_b = new Matrix3f();
+	private Vector3f center = new Vector3f();
+	private Vector3f extent = new Vector3f();
+
 	/**
 	 * getAabb's default implementation is brute force, expected derived classes to implement a fast dedicated version.
 	 */
 	@Override
 	public void getAabb(Transform trans, Vector3f aabbMin, Vector3f aabbMax)
 	{
-		Vector3f localHalfExtents = Stack.alloc(Vector3f.class);
-		localHalfExtents.sub(localAabbMax, localAabbMin);
-		localHalfExtents.scale(0.5f);
-		localHalfExtents.x += getMargin();
-		localHalfExtents.y += getMargin();
-		localHalfExtents.z += getMargin();
+		synchronized (abs_b)
+		{
+			abs_b.set(trans.basis);
+			MatrixUtil.absolute(abs_b);
 
-		Vector3f localCenter = Stack.alloc(Vector3f.class);
-		localCenter.add(localAabbMax, localAabbMin);
-		localCenter.scale(0.5f);
+			center.set(localCenter);
+			trans.transform(center);
 
-		Matrix3f abs_b = Stack.alloc(trans.basis);
-		MatrixUtil.absolute(abs_b);
+			// massively unrolled 
+			extent.x = (abs_b.m00 * localHalfExtents.x + abs_b.m01 * localHalfExtents.y + abs_b.m02 * localHalfExtents.z);
+			extent.y = (abs_b.m10 * localHalfExtents.x + abs_b.m11 * localHalfExtents.y + abs_b.m12 * localHalfExtents.z);
+			extent.z = (abs_b.m20 * localHalfExtents.x + abs_b.m21 * localHalfExtents.y + abs_b.m22 * localHalfExtents.z);
 
-		Vector3f center = Stack.alloc(localCenter);
-		trans.transform(center);
+			aabbMin.sub(center, extent);
+			aabbMax.add(center, extent);
+		}
 
-		Vector3f tmp = Stack.alloc(Vector3f.class);
-
-		Vector3f extent = Stack.alloc(Vector3f.class);
-		abs_b.getRow(0, tmp);
-		extent.x = tmp.dot(localHalfExtents);
-		abs_b.getRow(1, tmp);
-		extent.y = tmp.dot(localHalfExtents);
-		abs_b.getRow(2, tmp);
-		extent.z = tmp.dot(localHalfExtents);
-
-		aabbMin.sub(center, extent);
-		aabbMax.add(center, extent);
 	}
 
 	/**
@@ -204,6 +221,7 @@ public class CompoundShape extends CollisionShape
 	 */
 	public void recalculateLocalAabb()
 	{
+
 		// Recalculate the local aabb
 		// Brute force, it iterates over all the shapes left.
 		localAabbMin.set(1e30f, 1e30f, 1e30f);
@@ -217,31 +235,37 @@ public class CompoundShape extends CollisionShape
 		{
 			children.getQuick(j).childShape.getAabb(children.getQuick(j).transform, tmpLocalAabbMin, tmpLocalAabbMax);
 
-			for (int i = 0; i < 3; i++)
-			{
-				if (VectorUtil.getCoord(localAabbMin, i) > VectorUtil.getCoord(tmpLocalAabbMin, i))
+			/*	replaced with cleaner util
+			 for (int i = 0; i < 3; i++)
 				{
-					VectorUtil.setCoord(localAabbMin, i, VectorUtil.getCoord(tmpLocalAabbMin, i));
-				}
-				if (VectorUtil.getCoord(localAabbMax, i) < VectorUtil.getCoord(tmpLocalAabbMax, i))
-				{
-					VectorUtil.setCoord(localAabbMax, i, VectorUtil.getCoord(tmpLocalAabbMax, i));
-				}
-			}
+					if (VectorUtil.getCoord(localAabbMin, i) > VectorUtil.getCoord(tmpLocalAabbMin, i))
+					{
+						VectorUtil.setCoord(localAabbMin, i, VectorUtil.getCoord(tmpLocalAabbMin, i));
+					}
+					if (VectorUtil.getCoord(localAabbMax, i) < VectorUtil.getCoord(tmpLocalAabbMax, i))
+					{
+						VectorUtil.setCoord(localAabbMax, i, VectorUtil.getCoord(tmpLocalAabbMax, i));
+					}
+				}*/
+			VectorUtil.setMin(this.localAabbMin, tmpLocalAabbMin);
+			VectorUtil.setMax(this.localAabbMax, tmpLocalAabbMax);
 		}
+		updateCenterAndExtents();
 	}
 
+	/**
+	 * Careful!! this appears to be unusable!
+	 */
 	@Override
 	public void setLocalScaling(Vector3f scaling)
 	{
-		localScaling.set(scaling);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Vector3f getLocalScaling(Vector3f out)
 	{
-		out.set(localScaling);
-		return out;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -276,6 +300,7 @@ public class CompoundShape extends CollisionShape
 	public void setMargin(float margin)
 	{
 		collisionMargin = margin;
+		updateCenterAndExtents();
 	}
 
 	@Override
