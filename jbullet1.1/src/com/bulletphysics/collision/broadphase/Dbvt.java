@@ -25,15 +25,17 @@
 
 package com.bulletphysics.collision.broadphase;
 
+import java.util.Collections;
+
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.BulletGlobals;
-import com.bulletphysics.collision.broadphase.Dbvt.Node;
 import com.bulletphysics.linearmath.MiscUtil;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.util.IntArrayList;
 import com.bulletphysics.util.ObjectArrayList;
+
 import cz.advel.stack.Stack;
-import java.util.Collections;
-import javax.vecmath.Vector3f;
 
 /**
  *

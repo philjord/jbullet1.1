@@ -23,6 +23,10 @@
 
 package com.bulletphysics.collision.dispatch;
 
+import org.jogamp.vecmath.Matrix3f;
+import org.jogamp.vecmath.Quat4f;
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.BulletGlobals;
 import com.bulletphysics.BulletStats;
 import com.bulletphysics.collision.broadphase.BroadphaseInterface;
@@ -35,7 +39,6 @@ import com.bulletphysics.collision.broadphase.OverlappingPairCache;
 import com.bulletphysics.collision.narrowphase.ConvexCast;
 import com.bulletphysics.collision.narrowphase.ConvexCast.CastResult;
 import com.bulletphysics.collision.narrowphase.GjkConvexCast;
-import com.bulletphysics.collision.narrowphase.GjkEpaPenetrationDepthSolver;
 import com.bulletphysics.collision.narrowphase.SubsimplexConvexCast;
 import com.bulletphysics.collision.narrowphase.TriangleConvexcastCallback;
 import com.bulletphysics.collision.narrowphase.TriangleRaycastCallback;
@@ -46,17 +49,14 @@ import com.bulletphysics.collision.shapes.CompoundShape;
 import com.bulletphysics.collision.shapes.ConcaveShape;
 import com.bulletphysics.collision.shapes.ConvexShape;
 import com.bulletphysics.collision.shapes.SphereShape;
-import com.bulletphysics.collision.shapes.TriangleMeshShape;
 import com.bulletphysics.linearmath.AabbUtil2;
 import com.bulletphysics.linearmath.IDebugDraw;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.linearmath.TransformUtil;
 import com.bulletphysics.linearmath.VectorUtil;
 import com.bulletphysics.util.ObjectArrayList;
+
 import cz.advel.stack.Stack;
-import javax.vecmath.Matrix3f;
-import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
 
 /**
  * CollisionWorld is interface and container for the collision detection.

@@ -23,7 +23,7 @@
 
 package com.bulletphysics.dynamics.constraintsolver;
 
-import javax.vecmath.Vector3f;
+import org.jogamp.vecmath.Vector3f;
 
 /**
  * Stores some extra information to each contact point. It is not in the contact

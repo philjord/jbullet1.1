@@ -27,14 +27,16 @@
 
 package com.bulletphysics.extras.gimpact;
 
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.collision.shapes.CollisionShape;
 import com.bulletphysics.collision.shapes.StridingMeshInterface;
 import com.bulletphysics.collision.shapes.TriangleCallback;
 import com.bulletphysics.extras.gimpact.BoxCollision.AABB;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.util.IntArrayList;
+
 import cz.advel.stack.Stack;
-import javax.vecmath.Vector3f;
 
 /**
  * This class manages a sub part of a mesh supplied by the StridingMeshInterface interface.<p>

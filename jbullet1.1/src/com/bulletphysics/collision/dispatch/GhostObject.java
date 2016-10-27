@@ -23,6 +23,9 @@
 
 package com.bulletphysics.collision.dispatch;
 
+import org.jogamp.vecmath.Quat4f;
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.collision.broadphase.BroadphaseProxy;
 import com.bulletphysics.collision.broadphase.Dispatcher;
 import com.bulletphysics.collision.shapes.ConvexShape;
@@ -30,9 +33,8 @@ import com.bulletphysics.linearmath.AabbUtil2;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.linearmath.TransformUtil;
 import com.bulletphysics.util.ObjectArrayList;
+
 import cz.advel.stack.Stack;
-import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
 
 /**
  * GhostObject can keep track of all objects that are overlapping. By default, this

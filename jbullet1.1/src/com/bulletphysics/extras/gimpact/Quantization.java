@@ -27,9 +27,11 @@
 
 package com.bulletphysics.extras.gimpact;
 
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.linearmath.VectorUtil;
+
 import cz.advel.stack.Stack;
-import javax.vecmath.Vector3f;
 
 /**
  *

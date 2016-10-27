@@ -25,12 +25,17 @@
 
 package com.bulletphysics.collision.shapes;
 
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.linearmath.MiscUtil;
-import com.bulletphysics.linearmath.convexhull.*;
+import com.bulletphysics.linearmath.convexhull.HullDesc;
+import com.bulletphysics.linearmath.convexhull.HullFlags;
+import com.bulletphysics.linearmath.convexhull.HullLibrary;
+import com.bulletphysics.linearmath.convexhull.HullResult;
 import com.bulletphysics.util.IntArrayList;
 import com.bulletphysics.util.ObjectArrayList;
+
 import cz.advel.stack.Stack;
-import javax.vecmath.Vector3f;
 
 /**
  * ShapeHull takes a {@link ConvexShape}, builds the convex hull using {@link HullLibrary}

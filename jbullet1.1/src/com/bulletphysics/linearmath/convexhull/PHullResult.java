@@ -23,9 +23,10 @@
 
 package com.bulletphysics.linearmath.convexhull;
 
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.util.IntArrayList;
 import com.bulletphysics.util.ObjectArrayList;
-import javax.vecmath.Vector3f;
 
 /**
  *

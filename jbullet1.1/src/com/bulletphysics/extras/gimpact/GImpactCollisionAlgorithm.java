@@ -27,6 +27,9 @@
 
 package com.bulletphysics.extras.gimpact;
 
+import org.jogamp.vecmath.Vector3f;
+import org.jogamp.vecmath.Vector4f;
+
 import com.bulletphysics.collision.broadphase.BroadphaseNativeType;
 import com.bulletphysics.collision.broadphase.CollisionAlgorithm;
 import com.bulletphysics.collision.broadphase.CollisionAlgorithmConstructionInfo;
@@ -46,9 +49,8 @@ import com.bulletphysics.linearmath.VectorUtil;
 import com.bulletphysics.util.IntArrayList;
 import com.bulletphysics.util.ObjectArrayList;
 import com.bulletphysics.util.ObjectPool;
+
 import cz.advel.stack.Stack;
-import javax.vecmath.Vector3f;
-import javax.vecmath.Vector4f;
 
 /**
  * Collision Algorithm for GImpact Shapes.<p>

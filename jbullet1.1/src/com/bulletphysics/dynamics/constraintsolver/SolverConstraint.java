@@ -23,7 +23,7 @@
 
 package com.bulletphysics.dynamics.constraintsolver;
 
-import javax.vecmath.Vector3f;
+import org.jogamp.vecmath.Vector3f;
 
 /**
  * 1D constraint along a normal axis between bodyA and bodyB. It can be combined

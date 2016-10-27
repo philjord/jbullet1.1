@@ -26,7 +26,7 @@
 
 package com.bulletphysics.collision.broadphase;
 
-import javax.vecmath.Vector3f; 
+import org.jogamp.vecmath.Vector3f; 
 
 /**
  * AxisSweep3_32 allows higher precision quantization and more objects compared

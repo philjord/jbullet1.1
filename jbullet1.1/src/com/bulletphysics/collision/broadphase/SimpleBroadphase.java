@@ -23,8 +23,10 @@
 
 package com.bulletphysics.collision.broadphase;
 
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.util.ObjectArrayList;
-import javax.vecmath.Vector3f;
+ 
 
 /**
  * SimpleBroadphase is just a unit-test for {@link AxisSweep3}, {@link AxisSweep3_32},

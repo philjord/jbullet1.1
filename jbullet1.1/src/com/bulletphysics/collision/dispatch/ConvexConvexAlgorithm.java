@@ -23,7 +23,8 @@
 
 package com.bulletphysics.collision.dispatch;
 
-import com.bulletphysics.util.ObjectPool;
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.collision.broadphase.CollisionAlgorithm;
 import com.bulletphysics.collision.broadphase.CollisionAlgorithmConstructionInfo;
 import com.bulletphysics.collision.broadphase.DispatcherInfo;
@@ -39,8 +40,9 @@ import com.bulletphysics.collision.shapes.ConvexShape;
 import com.bulletphysics.collision.shapes.SphereShape;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.util.ObjectArrayList;
+import com.bulletphysics.util.ObjectPool;
+
 import cz.advel.stack.Stack;
-import javax.vecmath.Vector3f;
 
 /**
  * ConvexConvexAlgorithm collision algorithm implements time of impact, convex

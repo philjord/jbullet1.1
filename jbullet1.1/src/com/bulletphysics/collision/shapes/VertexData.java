@@ -23,9 +23,10 @@
 
 package com.bulletphysics.collision.shapes;
 
+import org.jogamp.vecmath.Tuple3f;
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.linearmath.VectorUtil;
-import javax.vecmath.Tuple3f;
-import javax.vecmath.Vector3f;
 
 /**
  * Allows accessing vertex data.

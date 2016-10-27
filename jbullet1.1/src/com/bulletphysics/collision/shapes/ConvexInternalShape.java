@@ -23,12 +23,14 @@
 
 package com.bulletphysics.collision.shapes;
 
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.BulletGlobals;
 import com.bulletphysics.linearmath.MatrixUtil;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.linearmath.VectorUtil;
+
 import cz.advel.stack.Stack;
-import javax.vecmath.Vector3f;
 
 /**
  * ConvexInternalShape is an internal base class, shared by most convex shape implementations.

@@ -25,8 +25,8 @@
 
 package com.bulletphysics.dom;
 
-import javax.vecmath.Matrix3f;
-import javax.vecmath.Vector3f;
+import org.jogamp.vecmath.Matrix3f;
+import org.jogamp.vecmath.Vector3f;
 
 import com.bulletphysics.collision.broadphase.BroadphaseNativeType;
 import com.bulletphysics.collision.shapes.ConcaveShape;

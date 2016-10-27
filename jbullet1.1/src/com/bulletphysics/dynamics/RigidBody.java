@@ -23,6 +23,10 @@
 
 package com.bulletphysics.dynamics;
 
+import org.jogamp.vecmath.Matrix3f;
+import org.jogamp.vecmath.Quat4f;
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.BulletGlobals;
 import com.bulletphysics.collision.broadphase.BroadphaseProxy;
 import com.bulletphysics.collision.dispatch.CollisionFlags;
@@ -36,11 +40,9 @@ import com.bulletphysics.linearmath.MotionState;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.linearmath.TransformUtil;
 import com.bulletphysics.util.ObjectArrayList;
+
 import cz.advel.stack.Stack;
 import cz.advel.stack.StaticAlloc;
-import javax.vecmath.Matrix3f;
-import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
 
 /**
  * RigidBody is the main class for rigid body objects. It is derived from

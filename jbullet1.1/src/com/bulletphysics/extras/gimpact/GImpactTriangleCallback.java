@@ -27,9 +27,10 @@
 
 package com.bulletphysics.extras.gimpact;
 
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.collision.dispatch.CollisionObject;
 import com.bulletphysics.collision.shapes.TriangleCallback;
-import javax.vecmath.Vector3f;
 
 /**
  *

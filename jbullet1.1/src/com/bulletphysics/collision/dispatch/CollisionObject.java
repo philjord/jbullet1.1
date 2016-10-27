@@ -23,10 +23,11 @@
 
 package com.bulletphysics.collision.dispatch;
 
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.collision.broadphase.BroadphaseProxy;
 import com.bulletphysics.collision.shapes.CollisionShape;
 import com.bulletphysics.linearmath.Transform;
-import javax.vecmath.Vector3f;
 
 /**
  * CollisionObject can be used to manage collision detection objects.

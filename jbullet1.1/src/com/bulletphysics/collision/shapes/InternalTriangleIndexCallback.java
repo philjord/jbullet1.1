@@ -23,7 +23,7 @@
 
 package com.bulletphysics.collision.shapes;
 
-import javax.vecmath.Vector3f;
+import org.jogamp.vecmath.Vector3f;
 
 /**
  * Callback for internal processing of triangles.

@@ -23,8 +23,9 @@
 
 package com.bulletphysics.collision.shapes;
 
+import org.jogamp.vecmath.Vector3f;
+
 import cz.advel.stack.Stack;
-import javax.vecmath.Vector3f;
 
 /**
  * Cylinder shape around the X axis.

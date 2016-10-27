@@ -23,10 +23,11 @@
 
 package com.bulletphysics.collision.narrowphase;
 
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.collision.shapes.ConvexShape;
 import com.bulletphysics.linearmath.IDebugDraw;
 import com.bulletphysics.linearmath.Transform;
-import javax.vecmath.Vector3f;
 
 /**
  * GjkEpaPenetrationDepthSolver uses the Expanding Polytope Algorithm to calculate

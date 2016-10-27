@@ -23,13 +23,16 @@
 
 package com.bulletphysics.collision.shapes;
 
+import java.io.Serializable;
+
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.linearmath.AabbUtil2;
 import com.bulletphysics.linearmath.MiscUtil;
 import com.bulletphysics.linearmath.VectorUtil;
 import com.bulletphysics.util.ObjectArrayList;
+
 import cz.advel.stack.Stack;
-import java.io.Serializable;
-import javax.vecmath.Vector3f;
 
 // JAVA NOTE: OptimizedBvh still from 2.66, update it for 2.70b1
 

@@ -24,18 +24,21 @@
 package com.bulletphysics.collision.narrowphase;
 
 import java.util.Arrays;
+
+import org.jogamp.vecmath.Matrix3f;
+import org.jogamp.vecmath.Quat4f;
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.BulletGlobals;
-import com.bulletphysics.util.ObjectStackList;
 import com.bulletphysics.collision.shapes.ConvexShape;
 import com.bulletphysics.linearmath.MatrixUtil;
 import com.bulletphysics.linearmath.QuaternionUtil;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.linearmath.VectorUtil;
 import com.bulletphysics.util.ArrayPool;
+import com.bulletphysics.util.ObjectStackList;
+
 import cz.advel.stack.Stack;
-import javax.vecmath.Matrix3f;
-import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
 
 /*
 GJK-EPA collision solver by Nathanael Presson

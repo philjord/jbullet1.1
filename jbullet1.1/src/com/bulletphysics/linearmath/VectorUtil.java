@@ -23,8 +23,8 @@
 
 package com.bulletphysics.linearmath;
 
-import javax.vecmath.Vector3f;
-import javax.vecmath.Vector4f;
+import org.jogamp.vecmath.Vector3f;
+import org.jogamp.vecmath.Vector4f;
 
 /**
  * Utility functions for vectors.

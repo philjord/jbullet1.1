@@ -27,8 +27,9 @@
 
 package com.bulletphysics.extras.gimpact;
 
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.collision.shapes.BU_Simplex1to4;
-import javax.vecmath.Vector3f;
 
 /**
  * Helper class for tetrahedrons.

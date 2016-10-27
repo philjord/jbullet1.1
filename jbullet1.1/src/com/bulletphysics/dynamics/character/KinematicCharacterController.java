@@ -2,8 +2,8 @@ package com.bulletphysics.dynamics.character;
 
 import java.util.ArrayList;
 
-import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
+import org.jogamp.vecmath.Quat4f;
+import org.jogamp.vecmath.Vector3f;
 
 import com.bulletphysics.BulletGlobals;
 import com.bulletphysics.collision.broadphase.BroadphasePair;

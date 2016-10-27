@@ -23,11 +23,13 @@
 
 package com.bulletphysics.dynamics.constraintsolver;
 
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.linearmath.TransformUtil;
+
 import cz.advel.stack.Stack;
-import javax.vecmath.Vector3f;
 
 /**
  * SolverBody is an internal data structure for the constraint solver. Only necessary

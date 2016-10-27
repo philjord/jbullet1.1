@@ -23,7 +23,7 @@
 
 package com.bulletphysics.collision.shapes;
 
-import javax.vecmath.Vector3f;
+import org.jogamp.vecmath.Vector3f;
 
 /**
  * ConcaveShape class provides an interface for non-moving (static) concave shapes.

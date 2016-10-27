@@ -23,6 +23,8 @@
 
 package com.bulletphysics.collision.dispatch;
 
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.collision.broadphase.CollisionAlgorithm;
 import com.bulletphysics.collision.broadphase.CollisionAlgorithmConstructionInfo;
 import com.bulletphysics.collision.broadphase.DispatcherInfo;
@@ -38,8 +40,8 @@ import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.linearmath.VectorUtil;
 import com.bulletphysics.util.ObjectArrayList;
 import com.bulletphysics.util.ObjectPool;
+
 import cz.advel.stack.Stack;
-import javax.vecmath.Vector3f;
 
 /**
  * ConvexConcaveCollisionAlgorithm supports collision between convex shapes

@@ -23,7 +23,7 @@
 
 package com.bulletphysics.collision.broadphase;
 
-import javax.vecmath.Vector3f;
+import org.jogamp.vecmath.Vector3f;
 
 /**
  *

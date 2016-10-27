@@ -23,13 +23,15 @@
 
 package com.bulletphysics.collision.narrowphase;
 
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.BulletGlobals;
 import com.bulletphysics.collision.shapes.ConvexShape;
 import com.bulletphysics.linearmath.MatrixUtil;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.linearmath.VectorUtil;
+
 import cz.advel.stack.Stack;
-import javax.vecmath.Vector3f;
 
 /**
  * SubsimplexConvexCast implements Gino van den Bergens' paper

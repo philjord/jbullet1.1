@@ -23,10 +23,12 @@
 
 package com.bulletphysics.dynamics.constraintsolver;
 
+import org.jogamp.vecmath.Matrix3f;
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.BulletGlobals;
 import com.bulletphysics.BulletStats;
 import com.bulletphysics.ContactDestroyedCallback;
-import com.bulletphysics.util.ObjectPool;
 import com.bulletphysics.collision.broadphase.Dispatcher;
 import com.bulletphysics.collision.dispatch.CollisionObject;
 import com.bulletphysics.collision.narrowphase.ManifoldPoint;
@@ -38,10 +40,10 @@ import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.linearmath.TransformUtil;
 import com.bulletphysics.util.IntArrayList;
 import com.bulletphysics.util.ObjectArrayList;
+import com.bulletphysics.util.ObjectPool;
+
 import cz.advel.stack.Stack;
 import cz.advel.stack.StaticAlloc;
-import javax.vecmath.Matrix3f;
-import javax.vecmath.Vector3f;
 
 /**
  * SequentialImpulseConstraintSolver uses a Propagation Method and Sequentially applies impulses.

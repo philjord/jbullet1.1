@@ -25,16 +25,18 @@
 
 package com.bulletphysics.dynamics.constraintsolver;
 
+import org.jogamp.vecmath.Matrix3f;
+import org.jogamp.vecmath.Quat4f;
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.BulletGlobals;
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.linearmath.QuaternionUtil;
 import com.bulletphysics.linearmath.ScalarUtil;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.linearmath.TransformUtil;
+
 import cz.advel.stack.Stack;
-import javax.vecmath.Matrix3f;
-import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
 
 /**
  * Hinge constraint between two rigid bodies each with a pivot point that descibes

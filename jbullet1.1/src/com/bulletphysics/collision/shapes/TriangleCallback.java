@@ -23,7 +23,9 @@
 
 package com.bulletphysics.collision.shapes;
 
-import javax.vecmath.Vector3f;
+import org.jogamp.vecmath.Vector3f;
+
+import com.bulletphysics.dom.HeightfieldTerrainShape;
 
 /**
  * TriangleCallback provides a callback for each overlapping triangle when calling

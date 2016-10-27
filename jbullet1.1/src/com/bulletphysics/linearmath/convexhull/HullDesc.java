@@ -23,8 +23,9 @@
 
 package com.bulletphysics.linearmath.convexhull;
 
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.util.ObjectArrayList;
-import javax.vecmath.Vector3f;
 
 /**
  * Describes point cloud data and other input for conversion to polygonal representation.

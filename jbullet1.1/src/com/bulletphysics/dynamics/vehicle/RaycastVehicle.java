@@ -23,6 +23,10 @@
 
 package com.bulletphysics.dynamics.vehicle;
 
+import org.jogamp.vecmath.Matrix3f;
+import org.jogamp.vecmath.Quat4f;
+import org.jogamp.vecmath.Vector3f;
+
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.constraintsolver.ContactConstraint;
 import com.bulletphysics.dynamics.constraintsolver.TypedConstraint;
@@ -34,10 +38,8 @@ import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.util.ArrayPool;
 import com.bulletphysics.util.FloatArrayList;
 import com.bulletphysics.util.ObjectArrayList;
+
 import cz.advel.stack.Stack;
-import javax.vecmath.Matrix3f;
-import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
 
 /**
  * Raycast vehicle, very special constraint that turn a rigidbody into a vehicle.

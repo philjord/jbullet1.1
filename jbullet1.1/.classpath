@@ -2,10 +2,10 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="/external_jars/external jars/lwjgl-2.8.5/jar/jinput.jar"/>
-	<classpathentry kind="lib" path="/external_jars/external jars/lwjgl-2.8.5/jar/lwjgl.jar" sourcepath="E:/downloads&amp;installs/develop/java/jogamp/jogamp-all-platforms/jogl-java-src.zip"/>
-	<classpathentry kind="lib" path="/external_jars/external jars/lwjgl-2.8.5/jar/lwjgl_util.jar"/>
 	<classpathentry kind="lib" path="lib/jstackalloc/stack-alloc.jar"/>
-	<classpathentry kind="lib" path="lib/vecmath/vecmath.jar" sourcepath="/vecmath"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre1.8.0_66a"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/vecmath"/>
+	<classpathentry kind="lib" path="/external_jars/external jars/lwjgl-2.8.5/jar/lwjgl_util.jar"/>
+	<classpathentry kind="lib" path="/external_jars/external jars/lwjgl-2.8.5/jar/lwjgl.jar" sourcepath="E:/downloads&amp;installs/develop/java/jogamp/jogamp-all-platforms/jogl-java-src.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
