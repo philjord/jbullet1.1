@@ -157,31 +157,37 @@ public class ArrayPool<T>
 	{
 		if (BulletGlobals.DISABLE_POOLING)
 		{
-			 
+
 		}
 		else
 		{
-			int index = Collections.binarySearch(list, array, comparator);
-			if (index < 0)
-				index = -index - 1;
-			list.add(index, array);
-
-			// remove references from object arrays:
-			if (comparator == objectComparator)
+			if (array != null)
 			{
-				Object[] objArray = (Object[]) array;
-				for (int i = 0; i < objArray.length; i++)
+				int index = Collections.binarySearch(list, array, comparator);
+				if (index < 0)
+					index = -index - 1;
+				list.add(index, array);
+
+				// remove references from object arrays:
+				if (comparator == objectComparator)
 				{
-					objArray[i] = null;
+					Object[] objArray = (Object[]) array;
+					for (int i = 0; i < objArray.length; i++)
+					{
+						objArray[i] = null;
+					}
 				}
+			}
+			else
+			{
+				System.err.println("null array released to object pool");
 			}
 		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////
 
-	private static Comparator floatComparator = new Comparator()
-	{
+	private static Comparator floatComparator = new Comparator() {
 		public int compare(Object o1, Object o2)
 		{
 			int len1 = (o1 instanceof IntValue) ? ((IntValue) o1).value : ((float[]) o1).length;
@@ -190,8 +196,7 @@ public class ArrayPool<T>
 		}
 	};
 
-	private static Comparator intComparator = new Comparator()
-	{
+	private static Comparator intComparator = new Comparator() {
 		public int compare(Object o1, Object o2)
 		{
 			int len1 = (o1 instanceof IntValue) ? ((IntValue) o1).value : ((int[]) o1).length;
@@ -200,8 +205,7 @@ public class ArrayPool<T>
 		}
 	};
 
-	private static Comparator objectComparator = new Comparator()
-	{
+	private static Comparator objectComparator = new Comparator() {
 		public int compare(Object o1, Object o2)
 		{
 			int len1 = (o1 instanceof IntValue) ? ((IntValue) o1).value : ((Object[]) o1).length;
@@ -217,8 +221,7 @@ public class ArrayPool<T>
 
 	////////////////////////////////////////////////////////////////////////////
 
-	private static ThreadLocal<Map<Class<?>, ArrayPool<?>>> threadLocal = new ThreadLocal<Map<Class<?>, ArrayPool<?>>>()
-	{
+	private static ThreadLocal<Map<Class<?>, ArrayPool<?>>> threadLocal = new ThreadLocal<Map<Class<?>, ArrayPool<?>>>() {
 		@Override
 		protected Map<Class<?>, ArrayPool<?>> initialValue()
 		{
