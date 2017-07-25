@@ -7,6 +7,7 @@ import org.jogamp.vecmath.Vector3f;
 
 import com.bulletphysics.BulletGlobals;
 import com.bulletphysics.collision.broadphase.BroadphasePair;
+import com.bulletphysics.collision.broadphase.BroadphaseProxy;
 import com.bulletphysics.collision.dispatch.CollisionObject;
 import com.bulletphysics.collision.dispatch.CollisionWorld;
 import com.bulletphysics.collision.dispatch.GhostObject;
@@ -15,11 +16,10 @@ import com.bulletphysics.collision.narrowphase.ManifoldPoint;
 import com.bulletphysics.collision.narrowphase.PersistentManifold;
 import com.bulletphysics.collision.shapes.ConvexShape;
 import com.bulletphysics.dynamics.ActionInterface;
+import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.linearmath.IDebugDraw;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.util.ObjectArrayList;
-
-import cz.advel.stack.Stack;
 
 /**
  * KinematicCharacterController is an object that supports a sliding motion in
@@ -127,6 +127,8 @@ public class KinematicCharacterController extends ActionInterface
 	private boolean wasJumping;
 
 	public boolean touchingContact;
+	
+	private int emptySpaceIterCount = 0;
 
 	//TODO: add a crouch command, slow him down too
 
@@ -159,11 +161,13 @@ public class KinematicCharacterController extends ActionInterface
 		this.full_drop = false;
 		this.bounce_fix = false;
 
-		currentPosition.set(ghostObject.getWorldTransform(Stack.alloc(Transform.class)).origin);
-		previousPosition.set(ghostObject.getWorldTransform(Stack.alloc(Transform.class)).origin);
+		currentPosition.set(ghostObject.getWorldTransform(new Transform()).origin);
+		previousPosition.set(ghostObject.getWorldTransform(new Transform()).origin);
 	}
 
 	Vector3f checker = new Vector3f();
+
+
 
 	// ActionInterface interface
 	public void updateAction(CollisionWorld collisionWorld, float deltaTime)
@@ -174,7 +178,7 @@ public class KinematicCharacterController extends ActionInterface
 		{
 			synchronized (walkDirection)
 			{
-				Transform xform = ghostObject.getWorldTransform(Stack.alloc(Transform.class));
+				Transform xform = ghostObject.getWorldTransform(new Transform());
 				xform.origin.set(warpRequest);
 				ghostObject.setWorldTransform(xform);
 				//let's pretend we've been here the whole time shall we
@@ -190,116 +194,60 @@ public class KinematicCharacterController extends ActionInterface
 			synchronized (walkDirection)
 			{
 				walkDirection.set(desiredWalkDirection);
-				normalizedDirection.set(getNormalizedVector(walkDirection, Stack.alloc(Vector3f.class)));
+				normalizedDirection.set(getNormalizedVector(walkDirection, new Vector3f()));
 				velocityTimeInterval = desiredVelocityTimeInterval;
 			}
+			
 
 			if (isFreeFly)
 			{
 				playerStepFreeFly(deltaTime);
 			}
 			else
-			{
+			{				
+				// every 100 of these check to see if we are over empty space and auto free fly
+				if(emptySpaceIterCount > 100)
+				{
+					emptySpaceIterCount = 0;
+					
+					Transform xform = ghostObject.getWorldTransform(new Transform());					
+					Vector3f to = new Vector3f(xform.origin);
+					to.y -= 1000;
+					
+					//ignore self
+					CollisionWorld.ClosestRayResultCallback rayCallback = new CollisionWorld.ClosestRayResultCallback(xform.origin, to);//{
+			/*			@Override
+						public boolean needsCollision(BroadphaseProxy proxy0)
+						{							 
+							if (proxy0.clientObject instanceof RigidBody)
+							{
+								RigidBody rb = (RigidBody) proxy0.clientObject;
+								if (rb.getCollisionShape()==convexShape)
+								{									 
+										return false;									 
+								}
+							}	 
+							return super.needsCollision(proxy0);
+						}
+					};*/
+					collisionWorld.rayTest(xform.origin, to, rayCallback);
+					if(!rayCallback.hasHit()){
+						isFreeFly = true;// note this won't update character controls, just stop falling
+					}
+					 
+				}
+				emptySpaceIterCount++;
+				
 				checker.set(currentPosition);
 
 				preStep(collisionWorld);
 				playerStep(collisionWorld, deltaTime);
 
-				//diff from this update
+				//diff that will be cause from this update, if it's big spew out the details
 				checker.sub(currentPosition);
 				if (checker.length() > 10)
 				{
-					System.out.println("*************** checker.length() " + checker.length());
-					System.out.println("previousPosition " + previousPosition);
-					System.out.println("currentPosition " + currentPosition);
-
-					System.out.println("resetting to prev");
-					currentPosition.set(previousPosition);
-					Transform xform2 = ghostObject.getWorldTransform(Stack.alloc(Transform.class));
-					xform2.origin.set(previousPosition);
-					ghostObject.setWorldTransform(xform2);
-					velocityTimeInterval += deltaTime;
-
-					System.out.println("running prestep");
-					preStep(collisionWorld);
-					System.out.println("currentPosition " + currentPosition);
-					playerStep(collisionWorld, deltaTime);
-
-					System.out.println("running debug of playerStep");
-					float dt = deltaTime;
-					System.out.println("testing no move");
-					System.out.println("useWalkDirection " + useWalkDirection);
-					System.out.println("velocityTimeInterval " + velocityTimeInterval);
-					System.out.println("walkDirection " + walkDirection);
-					if (velocityTimeInterval <= 0.0)
-					{
-						System.out.println("velocityTimeInterval <= 0.0 !!!!!!!!! " + velocityTimeInterval);
-					}
-
-					wasOnGround = onGround();
-					System.out.println("wasOnGround " + wasOnGround);
-
-					// Update fall velocity.
-					System.out.println("dt " + dt);
-					verticalVelocity -= gravity * dt;
-					System.out.println("verticalVelocity1 " + verticalVelocity);
-					if (verticalVelocity > 0.0 && verticalVelocity > jumpSpeed)
-					{
-						verticalVelocity = jumpSpeed;
-					}
-					if (verticalVelocity < 0.0 && Math.abs(verticalVelocity) > Math.abs(fallSpeed))
-					{
-						verticalVelocity = -Math.abs(fallSpeed);
-					}
-					System.out.println("verticalVelocity2 " + verticalVelocity);
-					verticalOffset = verticalVelocity * dt;
-					System.out.println("verticalOffset " + verticalOffset);
-
-					Transform xform = ghostObject.getWorldTransform(Stack.alloc(Transform.class));
-
-					System.out.println("stepUp");
-					stepUp(collisionWorld);
-					System.out.println("currentPosition " + currentPosition);
-					if (useWalkDirection)
-					{
-						System.out.println("useWalkDirection stepForwardAndStrafe");
-						stepForwardAndStrafe(collisionWorld, walkDirection);
-						System.out.println("currentPosition " + currentPosition);
-					}
-					else
-					{
-						// still have some time left for moving!
-						float dtMoving = (dt < velocityTimeInterval) ? dt : velocityTimeInterval;
-						System.out.println("dtMoving " + dtMoving);
-						velocityTimeInterval -= dt;
-						System.out.println("velocityTimeInterval " + velocityTimeInterval);
-
-						// how far will we move while we are moving?
-						Vector3f move = Stack.alloc(Vector3f.class);
-						move.scale(dtMoving, walkDirection);
-						System.out.println("move " + move);
-
-						//printf("  dtMoving: %f", dtMoving);
-
-						// okay, step
-						System.out.println("stepForwardAndStrafe ");
-						stepForwardAndStrafe(collisionWorld, move);
-						System.out.println("currentPosition " + currentPosition);
-					}
-
-					System.out.println("stepDown");
-					stepDown(collisionWorld, dt);
-					System.out.println("currentPosition " + currentPosition);
-					//printf("\n");
-
-					xform.origin.set(currentPosition);
-					ghostObject.setWorldTransform(xform);
-
-					System.out.println("resetting to prev ... and finished");
-					currentPosition.set(previousPosition);
-					Transform xform3 = ghostObject.getWorldTransform(Stack.alloc(Transform.class));
-					xform3.origin.set(previousPosition);
-					ghostObject.setWorldTransform(xform3);
+					outputDebugDetails(collisionWorld, deltaTime);
 				}
 
 			}
@@ -320,6 +268,102 @@ public class KinematicCharacterController extends ActionInterface
 			previousPosition.set(currentPosition);
 		}
 
+	}
+	
+	
+	private void outputDebugDetails(CollisionWorld collisionWorld, float deltaTime)
+	{
+		System.out.println("*************** checker.length() " + checker.length());
+		System.out.println("previousPosition " + previousPosition);
+		System.out.println("currentPosition " + currentPosition);
+
+		System.out.println("resetting to prev");
+		currentPosition.set(previousPosition);
+		Transform xform2 = ghostObject.getWorldTransform(new Transform());
+		xform2.origin.set(previousPosition);
+		ghostObject.setWorldTransform(xform2);
+		velocityTimeInterval += deltaTime;
+
+		System.out.println("running prestep");
+		preStep(collisionWorld);
+		System.out.println("currentPosition " + currentPosition);
+		playerStep(collisionWorld, deltaTime);
+
+		System.out.println("running debug of playerStep");
+		float dt = deltaTime;
+		System.out.println("testing no move");
+		System.out.println("useWalkDirection " + useWalkDirection);
+		System.out.println("velocityTimeInterval " + velocityTimeInterval);
+		System.out.println("walkDirection " + walkDirection);
+		if (velocityTimeInterval <= 0.0)
+		{
+			System.out.println("velocityTimeInterval <= 0.0 !!!!!!!!! " + velocityTimeInterval);
+		}
+
+		wasOnGround = onGround();
+		System.out.println("wasOnGround " + wasOnGround);
+
+		// Update fall velocity.
+		System.out.println("dt " + dt);
+		verticalVelocity -= gravity * dt;
+		System.out.println("verticalVelocity1 " + verticalVelocity);
+		if (verticalVelocity > 0.0 && verticalVelocity > jumpSpeed)
+		{
+			verticalVelocity = jumpSpeed;
+		}
+		if (verticalVelocity < 0.0 && Math.abs(verticalVelocity) > Math.abs(fallSpeed))
+		{
+			verticalVelocity = -Math.abs(fallSpeed);
+		}
+		System.out.println("verticalVelocity2 " + verticalVelocity);
+		verticalOffset = verticalVelocity * dt;
+		System.out.println("verticalOffset " + verticalOffset);
+
+		Transform xform = ghostObject.getWorldTransform(new Transform());
+
+		System.out.println("stepUp");
+		stepUp(collisionWorld);
+		System.out.println("currentPosition " + currentPosition);
+		if (useWalkDirection)
+		{
+			System.out.println("useWalkDirection stepForwardAndStrafe");
+			stepForwardAndStrafe(collisionWorld, walkDirection);
+			System.out.println("currentPosition " + currentPosition);
+		}
+		else
+		{
+			// still have some time left for moving!
+			float dtMoving = (dt < velocityTimeInterval) ? dt : velocityTimeInterval;
+			System.out.println("dtMoving " + dtMoving);
+			velocityTimeInterval -= dt;
+			System.out.println("velocityTimeInterval " + velocityTimeInterval);
+
+			// how far will we move while we are moving?
+			Vector3f move = new Vector3f();
+			move.scale(dtMoving, walkDirection);
+			System.out.println("move " + move);
+
+			//printf("  dtMoving: %f", dtMoving);
+
+			// okay, step
+			System.out.println("stepForwardAndStrafe ");
+			stepForwardAndStrafe(collisionWorld, move);
+			System.out.println("currentPosition " + currentPosition);
+		}
+
+		System.out.println("stepDown");
+		stepDown(collisionWorld, dt);
+		System.out.println("currentPosition " + currentPosition);
+		//printf("\n");
+
+		xform.origin.set(currentPosition);
+		ghostObject.setWorldTransform(xform);
+
+		System.out.println("resetting to prev ... and finished");
+		currentPosition.set(previousPosition);
+		Transform xform3 = ghostObject.getWorldTransform(new Transform());
+		xform3.origin.set(previousPosition);
+		ghostObject.setWorldTransform(xform3);
 	}
 
 	public void setRotation(Quat4f rotation)
@@ -430,6 +474,7 @@ public class KinematicCharacterController extends ActionInterface
 		}
 	}
 
+	private Transform presteptmp = new Transform();
 	public void preStep(CollisionWorld collisionWorld)
 	{
 		int numPenetrationLoops = 0;
@@ -445,12 +490,14 @@ public class KinematicCharacterController extends ActionInterface
 			}
 		}
 
-		currentPosition.set(ghostObject.getWorldTransform(Stack.alloc(Transform.class)).origin);
+		currentPosition.set(ghostObject.getWorldTransform(presteptmp).origin);
 		targetPosition.set(currentPosition);
 		//printf("m_targetPosition=%f,%f,%f\n",m_targetPosition[0],m_targetPosition[1],m_targetPosition[2]);
 
 	}
 
+	private Transform playersteptmp = new Transform();
+	private Vector3f playerstepmove = new Vector3f();
 	public void playerStep(CollisionWorld collisionWorld, float dt)
 	{
 		if (dt > 0)
@@ -476,7 +523,7 @@ public class KinematicCharacterController extends ActionInterface
 			}
 			verticalOffset = verticalVelocity * dt;
 
-			Transform xform = ghostObject.getWorldTransform(Stack.alloc(Transform.class));
+			Transform xform = ghostObject.getWorldTransform(playersteptmp);
 
 			//printf("walkDirection(%f,%f,%f)\n",walkDirection[0],walkDirection[1],walkDirection[2]);
 			//printf("walkSpeed=%f\n",walkSpeed);	
@@ -498,14 +545,13 @@ public class KinematicCharacterController extends ActionInterface
 					float dtMoving = (dt < velocityTimeInterval) ? dt : velocityTimeInterval;
 					velocityTimeInterval -= dt;
 
-					// how far will we move while we are moving?
-					Vector3f move = Stack.alloc(Vector3f.class);
-					move.scale(dtMoving, walkDirection);
+					// how far will we move while we are moving?					
+					playerstepmove.scale(dtMoving, walkDirection);
 
 					//printf("  dtMoving: %f", dtMoving);
 
 					// okay, step
-					stepForwardAndStrafe(collisionWorld, move);
+					stepForwardAndStrafe(collisionWorld, playerstepmove);
 				}
 			}
 
@@ -521,7 +567,9 @@ public class KinematicCharacterController extends ActionInterface
 		}
 
 	}
-
+	
+	private Vector3f playerStepFreeFlyMove = new Vector3f();
+	private Transform playerStepFreeFlyTmp = new Transform();
 	public void playerStepFreeFly(float dt)
 	{
 
@@ -533,13 +581,13 @@ public class KinematicCharacterController extends ActionInterface
 			velocityTimeInterval -= dt;
 
 			// how far will we move while we are moving?
-			Vector3f move = Stack.alloc(Vector3f.class);
-			move.scale(dtMoving, walkDirection);
-			targetPosition.add(currentPosition, move);
+			 
+			playerStepFreeFlyMove.scale(dtMoving, walkDirection);
+			targetPosition.add(currentPosition, playerStepFreeFlyMove);
 			currentPosition.set(targetPosition);
 		}
 
-		Transform xform = ghostObject.getWorldTransform(Stack.alloc(Transform.class));
+		Transform xform = ghostObject.getWorldTransform(playerStepFreeFlyTmp);
 		xform.origin.set(currentPosition);
 		ghostObject.setWorldTransform(xform);
 	}
@@ -612,6 +660,9 @@ public class KinematicCharacterController extends ActionInterface
 		return out;
 	}
 
+	Vector3f minAabb = new Vector3f();
+	Vector3f maxAabb = new Vector3f();
+	Transform recoverFromPenetrationTmp = new Transform();
 	protected boolean recoverFromPenetration(CollisionWorld collisionWorld)
 	{
 		// Here we must refresh the overlapping paircache as the penetrating movement itself or the
@@ -622,9 +673,8 @@ public class KinematicCharacterController extends ActionInterface
 		// Do this by calling the broadphase's setAabb with the moved AABB, this will update the broadphase
 		// paircache and the ghostobject's internal paircache at the same time.    /BW
 
-		Vector3f minAabb = Stack.alloc(Vector3f.class);
-		Vector3f maxAabb = Stack.alloc(Vector3f.class);
-		convexShape.getAabb(ghostObject.getWorldTransform(Stack.alloc(Transform.class)), minAabb, maxAabb);
+		
+		convexShape.getAabb(ghostObject.getWorldTransform(recoverFromPenetrationTmp), minAabb, maxAabb);
 		collisionWorld.getBroadphase().setAabb(ghostObject.getBroadphaseHandle(), minAabb, maxAabb, collisionWorld.getDispatcher());
 
 		boolean penetration = false;
@@ -632,7 +682,7 @@ public class KinematicCharacterController extends ActionInterface
 		collisionWorld.getDispatcher().dispatchAllCollisionPairs(ghostObject.getOverlappingPairCache(), collisionWorld.getDispatchInfo(),
 				collisionWorld.getDispatcher());
 
-		currentPosition.set(ghostObject.getWorldTransform(Stack.alloc(Transform.class)).origin);
+		currentPosition.set(ghostObject.getWorldTransform(recoverFromPenetrationTmp).origin);
 
 		float maxPen = 0.0f;
 		for (int i = 0; i < ghostObject.getOverlappingPairCache().getNumOverlappingPairs(); i++)
@@ -681,7 +731,7 @@ public class KinematicCharacterController extends ActionInterface
 			}
 		}
 
-		Transform newTrans = ghostObject.getWorldTransform(Stack.alloc(Transform.class));
+		Transform newTrans = ghostObject.getWorldTransform(recoverFromPenetrationTmp);
 		newTrans.origin.set(currentPosition);
 		ghostObject.setWorldTransform(newTrans);
 		//printf("m_touchingNormal = %f,%f,%f\n",m_touchingNormal[0],m_touchingNormal[1],m_touchingNormal[2]);
@@ -691,35 +741,37 @@ public class KinematicCharacterController extends ActionInterface
 		return penetration;
 	}
 
+	Transform stepUpStart = new Transform();
+	Transform stepUpEnd = new Transform();
+	Vector3f stepUpUp = new Vector3f();
 	protected void stepUp(CollisionWorld world)
 	{
 		// phase 1: up
-		Transform start = Stack.alloc(Transform.class);
-		Transform end = Stack.alloc(Transform.class);
+		
 		targetPosition.scaleAdd(stepHeight + (verticalOffset > 0.0 ? verticalOffset : 0.0f), upAxisDirection[upAxis], currentPosition);
 
-		start.setIdentity();
-		end.setIdentity();
+		stepUpStart.setIdentity();
+		stepUpEnd.setIdentity();
 
 		/* FIXME: Handle penetration properly */
-		start.origin.scaleAdd(convexShape.getMargin() + addedMargin, upAxisDirection[upAxis], currentPosition);
-		end.origin.set(targetPosition);
+		stepUpStart.origin.scaleAdd(convexShape.getMargin() + addedMargin, upAxisDirection[upAxis], currentPosition);
+		stepUpEnd.origin.set(targetPosition);
 
-		Vector3f up = Stack.alloc(Vector3f.class);
-		up.scale(-1f, upAxisDirection[upAxis]);
-		KinematicClosestNotMeConvexResultCallback callback = new KinematicClosestNotMeConvexResultCallback(ghostObject, up, 0.0f);
+		
+		stepUpUp.scale(-1f, upAxisDirection[upAxis]);
+		KinematicClosestNotMeConvexResultCallback callback = new KinematicClosestNotMeConvexResultCallback(ghostObject, stepUpUp, 0.0f);
 		callback.collisionFilterGroup = ghostObject.getBroadphaseHandle().collisionFilterGroup;
 		callback.collisionFilterMask = ghostObject.getBroadphaseHandle().collisionFilterMask;
 
 		if (useGhostObjectSweepTest)
 		{
-			ghostObject.convexSweepTest(convexShape, start, end, callback, world.getDispatchInfo().allowedCcdPenetration);
+			ghostObject.convexSweepTest(convexShape, stepUpStart, stepUpEnd, callback, world.getDispatchInfo().allowedCcdPenetration);
 		}
 		else
 		{
 			// this is a dodgy call that fails on GImapcts see the ghostObject.convexSweepTest above
 			//for a better option note useGhostObjectSweepTest defaults to true
-			world.convexSweepTest(convexShape, start, end, callback);
+			world.convexSweepTest(convexShape, stepUpStart, stepUpEnd, callback);
 		}
 
 		if (callback.hasHit())
@@ -752,24 +804,27 @@ public class KinematicCharacterController extends ActionInterface
 		updateTargetPositionBasedOnCollision(hitNormal, 0f, 1f);
 	}
 
+	private Vector3f movementDirection = new Vector3f();
+	private Vector3f parComponent = new Vector3f();
+	private Vector3f perpComponent = new Vector3f();
 	protected void updateTargetPositionBasedOnCollision(Vector3f hitNormal, float tangentMag, float normalMag)
 	{
 		//Stack.alloc(Vector3f.class).set(0, 0, 0);
-		Vector3f movementDirection = Stack.alloc(Vector3f.class);
+		
 		movementDirection.sub(targetPosition, currentPosition);
 		float movementLength = movementDirection.length();
 		if (movementLength > BulletGlobals.SIMD_EPSILON)
 		{
 			movementDirection.normalize();
 
-			Vector3f reflectDir = computeReflectionDirection(movementDirection, hitNormal, Stack.alloc(Vector3f.class));
+			Vector3f reflectDir = computeReflectionDirection(movementDirection, hitNormal, new Vector3f());
 			reflectDir.normalize();
 
 			targetPosition.set(currentPosition);
 			if (false) //tangentMag != 0.0)
 			{
-				Vector3f parComponent = Stack.alloc(Vector3f.class);
-				Vector3f parallelDir = parallelComponent(reflectDir, hitNormal, Stack.alloc(Vector3f.class));
+				
+				Vector3f parallelDir = parallelComponent(reflectDir, hitNormal, new Vector3f());
 				parComponent.scale(tangentMag * movementLength, parallelDir);
 				//printf("parComponent=%f,%f,%f\n",parComponent[0],parComponent[1],parComponent[2]);
 				targetPosition.add(parComponent);
@@ -777,8 +832,8 @@ public class KinematicCharacterController extends ActionInterface
 
 			if (normalMag != 0.0f)
 			{
-				Vector3f perpComponent = Stack.alloc(Vector3f.class);
-				Vector3f perpindicularDir = perpindicularComponent(reflectDir, hitNormal, Stack.alloc(Vector3f.class));
+			
+				Vector3f perpindicularDir = perpindicularComponent(reflectDir, hitNormal, new Vector3f());
 				perpComponent.scale(normalMag * movementLength, perpindicularDir);
 				//printf("perpComponent=%f,%f,%f\n",perpComponent[0],perpComponent[1],perpComponent[2]);
 				targetPosition.add(perpComponent);
@@ -790,21 +845,24 @@ public class KinematicCharacterController extends ActionInterface
 		}
 
 	}
-
+	Transform stepForwardAndStrafeStart = new Transform();
+	Transform stepForwardAndStrafeEnd = new Transform();
+	Vector3f distance2Vec = new Vector3f();
+	Vector3f sweepDirNegative = new Vector3f();
+	Vector3f currentDir = new Vector3f();
 	protected void stepForwardAndStrafe(CollisionWorld collisionWorld, Vector3f walkMove)
 	{
 		// printf("m_normalizedDirection=%f,%f,%f\n",
 		// 	m_normalizedDirection[0],m_normalizedDirection[1],m_normalizedDirection[2]);
 		// phase 2: forward and strafe
 
-		Transform start = Stack.alloc(Transform.class);
-		Transform end = Stack.alloc(Transform.class);
+		
 		targetPosition.add(currentPosition, walkMove);
-		start.setIdentity();
-		end.setIdentity();
+		stepForwardAndStrafeStart.setIdentity();
+		stepForwardAndStrafeEnd.setIdentity();
 
 		float fraction = 1.0f;
-		Vector3f distance2Vec = Stack.alloc(Vector3f.class);
+		
 		distance2Vec.sub(currentPosition, targetPosition);
 		float distance2 = distance2Vec.lengthSquared();
 		//printf("distance2=%f\n",distance2);
@@ -819,10 +877,10 @@ public class KinematicCharacterController extends ActionInterface
 
 		while (fraction > 0.01f && maxIter-- > 0)
 		{
-			start.origin.set(currentPosition);
-			end.origin.set(targetPosition);
+			stepForwardAndStrafeStart.origin.set(currentPosition);
+			stepForwardAndStrafeEnd.origin.set(targetPosition);
 
-			Vector3f sweepDirNegative = Stack.alloc(Vector3f.class);
+			
 			sweepDirNegative.sub(currentPosition, targetPosition);
 			KinematicClosestNotMeConvexResultCallback callback = new KinematicClosestNotMeConvexResultCallback(ghostObject,
 					sweepDirNegative, 0.0f);
@@ -833,12 +891,12 @@ public class KinematicCharacterController extends ActionInterface
 			convexShape.setMargin(margin + addedMargin);
 			if (useGhostObjectSweepTest)
 			{
-				ghostObject.convexSweepTest(convexShape, start, end, callback, collisionWorld.getDispatchInfo().allowedCcdPenetration);
+				ghostObject.convexSweepTest(convexShape, stepForwardAndStrafeStart, stepForwardAndStrafeEnd, callback, collisionWorld.getDispatchInfo().allowedCcdPenetration);
 			}
 			else
 			{
 				// this is a dodgy call that fails on GImapcts see the ghostObject.convexSweepTest above for a better option
-				collisionWorld.convexSweepTest(convexShape, start, end, callback);
+				collisionWorld.convexSweepTest(convexShape, stepForwardAndStrafeStart, stepForwardAndStrafeEnd, callback);
 			}
 
 			convexShape.setMargin(margin);
@@ -854,7 +912,7 @@ public class KinematicCharacterController extends ActionInterface
 
 				updateTargetPositionBasedOnCollision(callback.hitNormalWorld);
 
-				Vector3f currentDir = Stack.alloc(Vector3f.class);
+				
 				currentDir.sub(targetPosition, currentPosition);
 				distance2 = currentDir.lengthSquared();
 				if (distance2 > BulletGlobals.SIMD_EPSILON)
@@ -883,13 +941,15 @@ public class KinematicCharacterController extends ActionInterface
 		}
 
 	}
-
+	
+	//deburners
+	private Transform stepDownStart = new Transform();
+	private Transform stepDownEnd = new Transform();
+	private Transform stepDownEnd_double = new Transform();
+	private Vector3f orig_position = new Vector3f();
+	private Vector3f step_drop = new Vector3f();
 	protected void stepDown(CollisionWorld collisionWorld, float dt)
 	{
-
-		Transform start = Stack.alloc(Transform.class);
-		Transform end = Stack.alloc(Transform.class);
-		Transform end_double = Stack.alloc(Transform.class);
 		boolean runonce = false;
 
 		// phase 3: down
@@ -902,35 +962,16 @@ public class KinematicCharacterController extends ActionInterface
 		targetPosition.sub(step_drop);
 		targetPosition.sub(gravity_drop);*/
 
-		Vector3f orig_position = Stack.alloc(Vector3f.class);
+		
 		orig_position.set(targetPosition);
 
 		float downVelocity = (verticalVelocity < 0.0f ? -verticalVelocity : 0.0f) * dt;
 		if (downVelocity > 0.0 && downVelocity > fallSpeed && (wasOnGround || !wasJumping))
 			downVelocity = fallSpeed;
 
-		Vector3f step_drop = Stack.alloc(Vector3f.class);
+		
 		step_drop.scale(currentStepOffset + downVelocity, upAxisDirection[upAxis]);
 		targetPosition.sub(step_drop);
-
-		//***********NOT in the original!!!! 
-		//We  do an 1k ray and if there is no floor anywhere below us, 
-		//just disable gravity because infinite falling is NEVER useful, Note I borrow start and set it back
-		start.origin.y -= 1000;
-		KinematicClosestNotMeRayResultCallback cb = new KinematicClosestNotMeRayResultCallback(ghostObject);
-		cb.collisionFilterGroup = ghostObject.getBroadphaseHandle().collisionFilterGroup;
-		cb.collisionFilterMask = ghostObject.getBroadphaseHandle().collisionFilterMask;
-		ghostObject.rayTest(currentPosition, start.origin, cb);
-		start.origin.y += 1000;
-		if (!cb.hasHit())
-		{
-			// take stepHeight back off, it was added in during step up
-			currentPosition.y -= currentStepOffset;
-			verticalVelocity = 0.0f;
-			verticalOffset = 0.0f;
-			return;
-		}
-		//***********
 
 		KinematicClosestNotMeConvexResultCallback callback = new KinematicClosestNotMeConvexResultCallback(ghostObject,
 				upAxisDirection[upAxis], maxSlopeCosine);
@@ -941,39 +982,40 @@ public class KinematicCharacterController extends ActionInterface
 		callback2.collisionFilterGroup = ghostObject.getBroadphaseHandle().collisionFilterGroup;
 		callback2.collisionFilterMask = ghostObject.getBroadphaseHandle().collisionFilterMask;
 
+		
+		stepDownStart.setIdentity();
+		stepDownEnd.setIdentity();
+		stepDownEnd_double.setIdentity();
+		
 		while (true)
 		{
-			start.setIdentity();
-			end.setIdentity();
-			end_double.setIdentity();
-
-			start.origin.set(currentPosition);
-			end.origin.set(targetPosition);
+			stepDownStart.origin.set(currentPosition);
+			stepDownEnd.origin.set(targetPosition);
 
 			//set double test for 2x the step drop, to check for a large drop vs small drop
-			end_double.origin.set(targetPosition);
-			end_double.origin.sub(step_drop);
+			stepDownEnd_double.origin.set(targetPosition);
+			stepDownEnd_double.origin.sub(step_drop);
 
 			if (useGhostObjectSweepTest)
 			{
-				ghostObject.convexSweepTest(convexShape, start, end, callback, collisionWorld.getDispatchInfo().allowedCcdPenetration);
+				ghostObject.convexSweepTest(convexShape, stepDownStart, stepDownEnd, callback, collisionWorld.getDispatchInfo().allowedCcdPenetration);
 
 				if (!callback.hasHit())
 				{
 					//test a double fall height, to see if the character should interpolate it's fall (full) or not (partial)
-					ghostObject.convexSweepTest(convexShape, start, end_double, callback2,
+					ghostObject.convexSweepTest(convexShape, stepDownStart, stepDownEnd_double, callback2,
 							collisionWorld.getDispatchInfo().allowedCcdPenetration);
 				}
 			}
 			else
 			{
 				//collisionWorld.convexSweepTest has this pen param coded in, so should be fie
-				collisionWorld.convexSweepTest(convexShape, start, end, callback);//, collisionWorld.getDispatchInfo().allowedCcdPenetration);
+				collisionWorld.convexSweepTest(convexShape, stepDownStart, stepDownEnd, callback);//, collisionWorld.getDispatchInfo().allowedCcdPenetration);
 
 				if (!callback.hasHit())
 				{
 					//test a double fall height, to see if the character should interpolate it's fall (large) or not (small)
-					collisionWorld.convexSweepTest(convexShape, start, end_double, callback2);//,collisionWorld.getDispatchInfo().allowedCcdPenetration);
+					collisionWorld.convexSweepTest(convexShape, stepDownStart, stepDownEnd_double, callback2);//,collisionWorld.getDispatchInfo().allowedCcdPenetration);
 				}
 			}
 
@@ -1099,6 +1141,8 @@ public class KinematicCharacterController extends ActionInterface
 			this.minSlopeDot = minSlopeDot;
 		}
 
+		private Vector3f tmp = new Vector3f();
+		private Transform tmp2 = new Transform();
 		@Override
 		public float addSingleResult(CollisionWorld.LocalConvexResult convexResult, boolean normalInWorldSpace)
 		{
@@ -1115,9 +1159,9 @@ public class KinematicCharacterController extends ActionInterface
 			else
 			{
 				//need to transform normal into worldspace
-				hitNormalWorld2 = Stack.alloc(Vector3f.class);
+				hitNormalWorld2 = tmp;
 				hitCollisionObject = convexResult.hitCollisionObject;
-				hitCollisionObject.getWorldTransform(Stack.alloc(Transform.class)).basis.transform(convexResult.hitNormalLocal,
+				hitCollisionObject.getWorldTransform(tmp2).basis.transform(convexResult.hitNormalLocal,
 						hitNormalWorld2);
 			}
 
