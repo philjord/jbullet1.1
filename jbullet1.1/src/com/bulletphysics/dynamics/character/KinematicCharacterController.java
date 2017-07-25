@@ -50,8 +50,8 @@ import cz.advel.stack.Stack;
 public class KinematicCharacterController extends ActionInterface
 {
 
-	private static Vector3f[] upAxisDirection = new Vector3f[]
-	{ new Vector3f(1.0f, 0.0f, 0.0f), new Vector3f(0.0f, 1.0f, 0.0f), new Vector3f(0.0f, 0.0f, 1.0f), };
+	private static Vector3f[] upAxisDirection = new Vector3f[] { new Vector3f(1.0f, 0.0f, 0.0f), new Vector3f(0.0f, 1.0f, 0.0f),
+			new Vector3f(0.0f, 0.0f, 1.0f), };
 
 	private PairCachingGhostObject ghostObject;
 
@@ -76,6 +76,7 @@ public class KinematicCharacterController extends ActionInterface
 	private float stepHeight;
 
 	private boolean isFreeFly = false;
+	private boolean isAwaitingGround = false;
 
 	private float addedMargin; // TODO: remove this and fix the code
 
@@ -129,7 +130,7 @@ public class KinematicCharacterController extends ActionInterface
 	private boolean wasJumping;
 
 	public boolean touchingContact;
-	
+
 	private int emptySpaceIterCount = 0;
 
 	//TODO: add a crouch command, slow him down too
@@ -169,8 +170,6 @@ public class KinematicCharacterController extends ActionInterface
 
 	Vector3f checker = new Vector3f();
 
-
-
 	// ActionInterface interface
 	public void updateAction(CollisionWorld collisionWorld, float deltaTime)
 	{
@@ -199,47 +198,31 @@ public class KinematicCharacterController extends ActionInterface
 				normalizedDirection.set(getNormalizedVector(walkDirection, Stack.alloc(Vector3f.class)));
 				velocityTimeInterval = desiredVelocityTimeInterval;
 			}
-			
 
-			if (isFreeFly)
+			// every 100 of these check to see if we are over empty space and if so hover
+			if (emptySpaceIterCount > 100)
+			{
+				emptySpaceIterCount = 0;
+
+				Transform xform = ghostObject.getWorldTransform(new Transform());
+				Vector3f to = new Vector3f(xform.origin);
+				to.y -= 1000;
+
+				//ignore self
+				CollisionWorld.ClosestRayResultCallback rayCallback = new CollisionWorld.ClosestRayResultCallback(xform.origin, to);
+				collisionWorld.rayTest(xform.origin, to, rayCallback);
+				isAwaitingGround = !rayCallback.hasHit();
+
+			}
+			emptySpaceIterCount++;
+
+			if (isFreeFly || isAwaitingGround)
 			{
 				playerStepFreeFly(deltaTime);
 			}
 			else
-			{				
-				// every 100 of these check to see if we are over empty space and auto free fly
-				if(emptySpaceIterCount > 100)
-				{
-					emptySpaceIterCount = 0;
-					
-					Transform xform = ghostObject.getWorldTransform(new Transform());					
-					Vector3f to = new Vector3f(xform.origin);
-					to.y -= 1000;
-					
-					//ignore self
-					CollisionWorld.ClosestRayResultCallback rayCallback = new CollisionWorld.ClosestRayResultCallback(xform.origin, to);//{
-			/*			@Override
-						public boolean needsCollision(BroadphaseProxy proxy0)
-						{							 
-							if (proxy0.clientObject instanceof RigidBody)
-							{
-								RigidBody rb = (RigidBody) proxy0.clientObject;
-								if (rb.getCollisionShape()==convexShape)
-								{									 
-										return false;									 
-								}
-							}	 
-							return super.needsCollision(proxy0);
-						}
-					};*/
-					collisionWorld.rayTest(xform.origin, to, rayCallback);
-					if(!rayCallback.hasHit()){
-						isFreeFly = true;// note this won't update character controls, just stop falling
-					}
-					 
-				}
-				emptySpaceIterCount++;
-				
+			{
+
 				checker.set(currentPosition);
 
 				preStep(collisionWorld);
@@ -271,8 +254,7 @@ public class KinematicCharacterController extends ActionInterface
 		}
 
 	}
-	
-	
+
 	private void outputDebugDetails(CollisionWorld collisionWorld, float deltaTime)
 	{
 		System.out.println("*************** checker.length() " + checker.length());
@@ -321,7 +303,7 @@ public class KinematicCharacterController extends ActionInterface
 		verticalOffset = verticalVelocity * dt;
 		System.out.println("verticalOffset " + verticalOffset);
 
-					Transform xform = ghostObject.getWorldTransform(Stack.alloc(Transform.class));
+		Transform xform = ghostObject.getWorldTransform(Stack.alloc(Transform.class));
 
 		System.out.println("stepUp");
 		stepUp(collisionWorld);
@@ -341,7 +323,7 @@ public class KinematicCharacterController extends ActionInterface
 			System.out.println("velocityTimeInterval " + velocityTimeInterval);
 
 			// how far will we move while we are moving?
-						Vector3f move = Stack.alloc(Vector3f.class);
+			Vector3f move = Stack.alloc(Vector3f.class);
 			move.scale(dtMoving, walkDirection);
 			System.out.println("move " + move);
 
@@ -363,7 +345,7 @@ public class KinematicCharacterController extends ActionInterface
 
 		System.out.println("resetting to prev ... and finished");
 		currentPosition.set(previousPosition);
-					Transform xform3 = ghostObject.getWorldTransform(Stack.alloc(Transform.class));
+		Transform xform3 = ghostObject.getWorldTransform(Stack.alloc(Transform.class));
 		xform3.origin.set(previousPosition);
 		ghostObject.setWorldTransform(xform3);
 	}
@@ -567,7 +549,7 @@ public class KinematicCharacterController extends ActionInterface
 		}
 
 	}
-	
+
 	public void playerStepFreeFly(float dt)
 	{
 
@@ -750,7 +732,7 @@ public class KinematicCharacterController extends ActionInterface
 		/* FIXME: Handle penetration properly */
 		start.origin.scaleAdd(convexShape.getMargin() + addedMargin, upAxisDirection[upAxis], currentPosition);
 		end.origin.set(targetPosition);
-		
+
 		Vector3f up = Stack.alloc(Vector3f.class);
 		up.scale(-1f, upAxisDirection[upAxis]);
 		KinematicClosestNotMeConvexResultCallback callback = new KinematicClosestNotMeConvexResultCallback(ghostObject, up, 0.0f);
@@ -867,7 +849,7 @@ public class KinematicCharacterController extends ActionInterface
 		{
 			start.origin.set(currentPosition);
 			end.origin.set(targetPosition);
-			
+
 			Vector3f sweepDirNegative = Stack.alloc(Vector3f.class);
 			sweepDirNegative.sub(currentPosition, targetPosition);
 			KinematicClosestNotMeConvexResultCallback callback = new KinematicClosestNotMeConvexResultCallback(ghostObject,
@@ -929,7 +911,7 @@ public class KinematicCharacterController extends ActionInterface
 		}
 
 	}
-	
+
 	protected void stepDown(CollisionWorld collisionWorld, float dt)
 	{
 
@@ -968,11 +950,10 @@ public class KinematicCharacterController extends ActionInterface
 		callback2.collisionFilterGroup = ghostObject.getBroadphaseHandle().collisionFilterGroup;
 		callback2.collisionFilterMask = ghostObject.getBroadphaseHandle().collisionFilterMask;
 
-		
 		start.setIdentity();
 		end.setIdentity();
 		end_double.setIdentity();
-		
+
 		while (true)
 		{
 			start.origin.set(currentPosition);
