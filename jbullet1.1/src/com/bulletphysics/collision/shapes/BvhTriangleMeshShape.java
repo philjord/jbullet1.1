@@ -30,7 +30,7 @@ import com.bulletphysics.collision.broadphase.BroadphaseNativeType;
 import com.bulletphysics.linearmath.VectorUtil;
 
 import cz.advel.stack.Stack;
-import javafx.scene.shape.TriangleMesh;
+
 
 /**
  * BvhTriangleMeshShape is a static-triangle mesh shape with several optimizations,
